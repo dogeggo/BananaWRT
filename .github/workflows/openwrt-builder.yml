@@ -10,7 +10,7 @@
 # See /LICENSE for more information.
 #
 
-name: OpenWrt Builder
+name: BananaWRT Builder
 
 on:
   repository_dispatch:
@@ -156,6 +156,36 @@ jobs:
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
+
+    - name: Upload to Nextcloud
+      if: steps.organize.outputs.status == 'success' && !cancelled()
+      env:
+        WEBDAV_URL: ${{ secrets.NEXTCLOUD_WEBDAV_URL }}
+        WEBDAV_USERNAME: ${{ secrets.NEXTCLOUD_USERNAME }}
+        WEBDAV_TOKEN: ${{ secrets.NEXTCLOUD_TOKEN }}
+        REPO_BRANCH: ${{ env.REPO_BRANCH }}
+      run: |
+        BRANCH_FOLDER="$WEBDAV_URL/$REPO_BRANCH"
+        DATE_FOLDER="$BRANCH_FOLDER/$(date +"%y-%m-%d")"
+
+        create_folder() {
+          local folder=$1
+          echo "Checking or creating folder: $folder"
+          curl -s -X MKCOL -u "$WEBDAV_USERNAME:$WEBDAV_TOKEN" "$folder" || echo "Folder may already exist: $folder"
+        }
+
+        create_folder "$BRANCH_FOLDER"
+
+        create_folder "$DATE_FOLDER"
+
+        cd ${{ env.FIRMWARE }}
+        for file in immortal*.bin immortal*.itb immortal*.fip; do
+          if [ -f "$file" ]; then
+            echo "Uploading $file to $DATE_FOLDER..."
+            curl -T "$file" -u "$WEBDAV_USERNAME:$WEBDAV_TOKEN" "$DATE_FOLDER/$file" || echo "Failed to upload $file"
+          fi
+        done
+        
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       with:
