@@ -10,11 +10,9 @@
 # See /LICENSE for more information.
 #
 
-# Modify default IP
-#sed -i 's/192.168.1.1/192.168.50.5/g' package/base-files/files/bin/config_generate
-
-# Modify default theme
-#sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
-
-# Modify hostname
-#sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
+# Remove default packages from luci repository
+rm -rf package/feeds/luci/luci-app-modemband
+rm -rf package/feeds/packages/modemband
+rm -rf package/feeds/luci/luci-app-3ginfo-lite
+rm -rf package/feeds/luci/luci-i18n-modemband-*
+rm -rf package/feeds/luci/luci-app-sms-tool-js*
