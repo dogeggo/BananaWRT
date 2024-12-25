@@ -1,39 +1,47 @@
-**English** | [中文](https://p3terx.com/archives/build-openwrt-with-github-actions.html)
+# BananaWRT
 
-# Actions-OpenWrt
+**BananaWRT** is a custom distribution based on **ImmortalWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
 
-[![LICENSE](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square&label=LICENSE)](https://github.com/P3TERX/Actions-OpenWrt/blob/master/LICENSE)
-![GitHub Stars](https://img.shields.io/github/stars/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Stars&logo=github)
-![GitHub Forks](https://img.shields.io/github/forks/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Forks&logo=github)
+## Features
 
-A template for building OpenWrt with GitHub Actions
+- Optimized support for **Banana Pi R3 Mini** hardware.
+- Compatibility with the **Fibocom FM350** modem.
+- Automated builds using GitHub Actions.
+- Based on the stable and feature-rich **ImmortalWRT** distribution.
 
-## Usage
+---
 
-- Click the [Use this template](https://github.com/P3TERX/Actions-OpenWrt/generate) button to create a new repository.
-- Generate `.config` files using [Lean's OpenWrt](https://github.com/coolsnowwolf/lede) source code. ( You can change it through environment variables in the workflow file. )
-- Push `.config` file to the GitHub repository.
-- Select `Build OpenWrt` on the Actions page.
-- Click the `Run workflow` button.
-- When the build is complete, click the `Artifacts` button in the upper right corner of the Actions page to download the binaries.
+## Hardware Specifications
 
-## Tips
+### Banana Pi R3 Mini
 
-- It may take a long time to create a `.config` file and build the OpenWrt firmware. Thus, before create repository to build your own firmware, you may check out if others have already built it which meet your needs by simply [search `Actions-Openwrt` in GitHub](https://github.com/search?q=Actions-openwrt).
-- Add some meta info of your built firmware (such as firmware architecture and installed packages) to your repository introduction, this will save others' time.
+| Specification                | Details                               |
+|------------------------------|---------------------------------------|
+| **CPU**                      | MediaTek MT7986B (quad-core ARM Cortex-A53) |
+| **RAM**                      | 2GB DDR4                             |
+| **Storage**                  | 8GB eMMC, microSD slot, USB support  |
+| **Networking**               | 2x 2.5GbE Ethernet ports             |
+| **Wi-Fi**                    | Dual-band Wi-Fi 6 (802.11ax)         |
+| **Hardware Acceleration**    | Offloading for Wi-Fi and NAT         |
+| **Expansion**                | 1x PCIe slot                         |
+| **Power**                    | 12V/2A DC input                      |
 
-## Credits
+### Fibocom FM350
 
-- [Microsoft Azure](https://azure.microsoft.com)
-- [GitHub Actions](https://github.com/features/actions)
-- [OpenWrt](https://github.com/openwrt/openwrt)
-- [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
-- [Mikubill/transfer](https://github.com/Mikubill/transfer)
-- [softprops/action-gh-release](https://github.com/softprops/action-gh-release)
-- [Mattraks/delete-workflow-runs](https://github.com/Mattraks/delete-workflow-runs)
-- [dev-drprasad/delete-older-releases](https://github.com/dev-drprasad/delete-older-releases)
-- [peter-evans/repository-dispatch](https://github.com/peter-evans/repository-dispatch)
+| Specification                | Details                               |
+|------------------------------|---------------------------------------|
+| **Modem Type**               | 5G NR Sub-6GHz / LTE / WCDMA         |
+| **Max Download Speed**       | 4.7 Gbps                             |
+| **Max Upload Speed**         | 2.5 Gbps                             |
+| **Interface**                | M.2 PCIe (USB 3.0)                   |
+| **GPS**                      | Supported                            |
+| **Power**                    | 3.3V DC                              |
 
-## License
+---
 
-[MIT](https://github.com/P3TERX/Actions-OpenWrt/blob/main/LICENSE) © [**P3TERX**](https://p3terx.com)
+
+## Contributions
+
+Contributions are welcome! Please open issues for bugs or feature requests and submit pull requests for code changes.
+
+
