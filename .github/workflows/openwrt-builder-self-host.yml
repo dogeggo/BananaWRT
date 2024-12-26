@@ -36,6 +36,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
+    - name: Clean up environment
+      uses: Lyoko-Jeremie/js-rm-github-action@master
+      with:
+        path: /workdir
+        
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -48,7 +53,6 @@ jobs:
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo rm -r /workdir
-        sudo rm -r BananaWRT
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
