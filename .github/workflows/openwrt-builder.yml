@@ -1,24 +1,11 @@
-#
-# https://github.com/P3TERX/Actions-OpenWrt
-#
-# File: .github/workflows/openwrt-bulder.yml
-# Description: Build OpenWrt using GitHub Actions
-#
-# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
-
 name: BananaWRT Builder
-
 on:
   repository_dispatch:
   workflow_dispatch:
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: v24.10.0-rc2
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: 24.10.0-rc4
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -31,29 +18,33 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
     steps:
-    - name: Checkout
+    - name: Checkout Source Code
       uses: actions/checkout@main
 
-    - name: Clean up environment
-      uses: Lyoko-Jeremie/js-rm-github-action@master
-      with:
-        path: /workdir/openwrt
-
-    - name: Initialization environment
+    - name: Set Up Build Environment
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
         sudo docker image prune --all --force
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
-        sudo -E apt-get -qq autoremove --purge
-        sudo -E apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
+        sudo apt-get -qq update
+        sudo apt-get -qq install -y \
+          ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext \
+          gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 \
+          libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
+          libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
+          libssl-dev libtool lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch \
+          pkgconf python2.7 python3 python3-pyelftools python3-setuptools qemu-utils \
+          rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip \
+          vim wget xmlto xxd zlib1g-dev
+        sudo apt-get -qq autoremove --purge -y
+        sudo apt-get -qq clean
+    
+    - name: Set timezone on the host
+      if: 
+      run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
 
     - name: Authenticate GitHub
       env:
@@ -64,114 +55,103 @@ jobs:
         echo "machine github.com login ${{ secrets.PERSONAL_ACCESS_TOKEN }}" > ~/.netrc
         chmod 600 ~/.netrc
 
-    - name: Clone source code
-      working-directory: /workdir
+    - name: Clone OpenWRT Repository
+      working-directory: ${{ runner.workspace }}
       run: |
-        df -hT $PWD
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        git clone $REPO_URL -b v"$REPO_BRANCH" openwrt
 
-    - name: Load custom feeds
+    - name: Apply Custom Feeds Configuration
       run: |
-        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
-        chmod +x $DIY_P1_SH
-        cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P1_SH
+        [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/openwrt/feeds.conf.default
+        chmod +x ${{ env.DIY_P1_SH }}
+        cd ${{ runner.workspace }}/openwrt
+        $GITHUB_WORKSPACE/${{ env.DIY_P1_SH }}
 
-    - name: Adding custom dts
-      run: cp -r dts/* openwrt/target/linux/mediatek/dts/
-
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
-
-    - name: Load custom configuration
+    - name: Add Custom DTS Files
       run: |
-        [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $DIY_P2_SH
-        cd openwrt
-        $GITHUB_WORKSPACE/$DIY_P2_SH
+        cp -r dts/* ${{ runner.workspace }}/openwrt/target/linux/mediatek/dts/
 
-    - name: Download package
-      id: package
+    - name: Update Package Feeds
       run: |
-        cd openwrt
+        cd ${{ runner.workspace }}/openwrt
+        ./scripts/feeds update -a
+
+    - name: Install Package Feeds
+      run: |
+        cd ${{ runner.workspace }}/openwrt
+        ./scripts/feeds install -a
+
+    - name: Apply Custom Configuration
+      run: |
+        [ -e files ] && mv files ${{ runner.workspace }}/openwrt/files
+        [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/openwrt/.config
+        chmod +x ${{ env.DIY_P2_SH }}
+        cd ${{ runner.workspace }}/openwrt
+        $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
+
+    - name: Diffconfig with current configuration
+      run: |
+        cd ${{ runner.workspace }}/openwrt
+        ./scripts/diffconfig.sh > diffconfig
+        curl https://downloads.openwrt.org/releases/$REPO_BRANCH/targets/mediatek/filogic/config.buildinfo
+        cat diffconfig >> config.buildinfo
+        mv config.buildinfo .config
+
+
+    - name: Download Required Packages
+      run: |
+        cd ${{ runner.workspace }}/openwrt
         make defconfig
-        make download -j8
+        make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile the firmware
-      id: compile
+    - name: Build Firmware
       run: |
-        cd openwrt
-        echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s
-        echo "status=success" >> $GITHUB_OUTPUT
+        cd ${{ runner.workspace }}/openwrt
+        make -j$(nproc) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-        [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
-        echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
+        echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
-    - name: Check space usage
-      if: (!cancelled())
+    - name: Check Disk Usage
       run: df -hT
 
-    - name: Upload bin directory
+    - name: Upload Binary Files
+      if: env.UPLOAD_BIN_DIR == 'true'
       uses: actions/upload-artifact@main
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
-        name: BananaWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin
+        name: BananaWRT_bin${{ env.FILE_DATE }}
+        path: ${{ runner.workspace }}/openwrt/bin
 
-    - name: Organize files
-      id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+    - name: Prepare Firmware for Upload
       run: |
-        cd openwrt/bin/targets/*/*
+        cd ${{ runner.workspace }}/openwrt/bin/targets/*/*
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Upload firmware directory
+    - name: Upload Firmware Files
+      if: env.UPLOAD_FIRMWARE == 'true'
       uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
-        name: BananaWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        name: BananaWRT_firmware${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-    - name: Generate release tag
-      id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+    - name: Create Release Tag
+      if: env.UPLOAD_RELEASE == 'true'
       run: |
-        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
-        touch release.txt
-        [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
-        echo "status=success" >> $GITHUB_OUTPUT
+        echo "release_tag=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+        echo "Release created on $(date)" > release.txt
 
-    - name: Upload firmware to release
-      uses: softprops/action-gh-release@master
-      if: steps.tag.outputs.status == 'success' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish Firmware Release
+      if: env.UPLOAD_RELEASE == 'true'
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
+        tag_name: ${{ env.release_tag }}
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
-        
-    - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@main
-      with:
-        retain_days: 0
-        keep_minimum_runs: 2
 
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@master
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 3
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Cleanup Workspace
+      if: always()
+      run: |
+        sudo rm -rf ~/.netrc
+        sudo rm -rf "${{ runner.workspace }}"

@@ -1,13 +1,13 @@
 # BananaWRT
 
-**BananaWRT** is a custom distribution based on **ImmortalWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
+**BananaWRT** is a custom distribution based on **OpenWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
 
 ## Features
 
 - Optimized support for **Banana Pi R3 Mini** hardware.
 - Compatibility with the **Fibocom FM350** modem.
 - Automated builds using GitHub Actions.
-- Based on the stable and feature-rich **ImmortalWRT** distribution.
+- Based on the stable and feature-rich **OpenWRT** distribution.
 
 ---
 
