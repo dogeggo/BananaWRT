@@ -1,4 +1,4 @@
-name: ImmortalWrt Builder (Self Hosted)
+name: BananaWRT Builder (Self Hosted)
 
 on:
   repository_dispatch:
@@ -24,8 +24,9 @@ jobs:
     - name: Checkout Source Code
       uses: actions/checkout@main
 
-    - name: Clean Workspace
-      uses: jstone28/runner-workspace-cleaner@v1.0.0
+    - name: Cleanup Workspace (Before Build)
+      run: |
+        sudo rm -rf ${{ runner.workspace }}/*
 
     - name: Set Up Build Environment
       env:
@@ -102,7 +103,7 @@ jobs:
       if: env.UPLOAD_BIN_DIR == 'true'
       uses: actions/upload-artifact@main
       with:
-        name: ImmortalWRT_bin${{ env.FILE_DATE }}
+        name: BananaWRT_bin${{ env.FILE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
 
     - name: Prepare Firmware for Upload
@@ -115,7 +116,7 @@ jobs:
       if: env.UPLOAD_FIRMWARE == 'true'
       uses: actions/upload-artifact@main
       with:
-        name: ImmortalWRT_firmware${{ env.FILE_DATE }}
+        name: BananaWRT_firmware${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
     - name: Create Release Tag
@@ -135,3 +136,8 @@ jobs:
     - name: Cleanup Authentication
       if: always()
       run: rm -f ~/.netrc
+
+    - name: Cleanup Workspace (After Build)
+      if: always()
+      run: |
+        sudo rm -rf ${{ runner.workspace }}/*
