@@ -21,12 +21,13 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Cleanup Workspace (Before Build)
+      uses: Lyoko-Jeremie/js-rm-github-action@master
+      with:
+        path: ${{ runner.workspace }}/*
+
     - name: Checkout Source Code
       uses: actions/checkout@main
-
-    - name: Cleanup Workspace (Before Build)
-      run: |
-        sudo rm -rf ${{ runner.workspace }}/*
 
     - name: Set Up Build Environment
       env:
@@ -133,11 +134,10 @@ jobs:
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
-    - name: Cleanup Authentication
-      if: always()
-      run: rm -f ~/.netrc
-
     - name: Cleanup Workspace (After Build)
       if: always()
-      run: |
-        sudo rm -rf ${{ runner.workspace }}/*
+      uses: Lyoko-Jeremie/js-rm-github-action@master
+      with:
+        path: |
+           ~/.netrc
+           ${{ runner.workspace }}/*
