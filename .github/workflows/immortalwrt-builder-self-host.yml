@@ -41,7 +41,10 @@ jobs:
           vim wget xmlto xxd zlib1g-dev
         sudo apt-get -qq autoremove --purge -y
         sudo apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
+    
+    - name: Set timezone on the host
+      if: always()
+      run: sudo timedatectl set-timezone "$TZ"
 
     - name: Authenticate GitHub
       env:
