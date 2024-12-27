@@ -1,0 +1,138 @@
+name: ImmortalWrt Builder (Self Hosted)
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+env:
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: v24.10.0-rc2
+  FEEDS_CONF: feeds.conf.default
+  CONFIG_FILE: .config
+  DIY_P1_SH: diy-part1.sh
+  DIY_P2_SH: diy-part2.sh
+  UPLOAD_BIN_DIR: false
+  UPLOAD_FIRMWARE: true
+  UPLOAD_RELEASE: true
+  TZ: Europe/Rome
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@main
+
+    - name: Clean Workspace
+      run: |
+        sudo rm -rf ${{ runner.workspace }}/immortalwrt
+
+    - name: Set Up Build Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install -y \
+          ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+          bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext \
+          gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 \
+          libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
+          libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
+          libssl-dev libtool lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch \
+          pkgconf python2.7 python3 python3-pyelftools python3-setuptools qemu-utils \
+          rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip \
+          vim wget xmlto xxd zlib1g-dev
+        sudo apt-get -qq autoremove --purge -y
+        sudo apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+
+    - name: Clone ImmortalWrt Repository
+      working-directory: ${{ runner.workspace }}
+      run: |
+        git clone $REPO_URL -b $REPO_BRANCH immortalwrt
+
+    - name: Apply Custom Feeds Configuration
+      run: |
+        [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/immortalwrt/feeds.conf.default
+        chmod +x ${{ env.DIY_P1_SH }}
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/${{ env.DIY_P1_SH }}
+
+    - name: Add Custom DTS Files
+      run: |
+        cp -r dts/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+
+    - name: Update Package Feeds
+      run: |
+        cd ${{ runner.workspace }}/immortalwrt
+        ./scripts/feeds update -a
+
+    - name: Install Package Feeds
+      run: |
+        cd ${{ runner.workspace }}/immortalwrt
+        ./scripts/feeds install -a
+
+    - name: Apply Custom Configuration
+      run: |
+        [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
+        [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
+        chmod +x ${{ env.DIY_P2_SH }}
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
+
+    - name: Download Required Packages
+      run: |
+        cd ${{ runner.workspace }}/immortalwrt
+        make defconfig
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Build Firmware
+      run: |
+        cd ${{ runner.workspace }}/immortalwrt
+        make -j$(nproc) || make -j1 V=s
+        grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
+        echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+
+    - name: Check Disk Usage
+      run: df -hT
+
+    - name: Upload Binary Files
+      if: env.UPLOAD_BIN_DIR == 'true'
+      uses: actions/upload-artifact@main
+      with:
+        name: ImmortalWRT_bin${{ env.FILE_DATE }}
+        path: ${{ runner.workspace }}/immortalwrt/bin
+
+    - name: Prepare Firmware for Upload
+      run: |
+        cd ${{ runner.workspace }}/immortalwrt/bin/targets/*/*
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+
+    - name: Upload Firmware Files
+      if: env.UPLOAD_FIRMWARE == 'true'
+      uses: actions/upload-artifact@main
+      with:
+        name: ImmortalWRT_firmware${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
+
+    - name: Create Release Tag
+      if: env.UPLOAD_RELEASE == 'true'
+      run: |
+        echo "release_tag=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+        echo "Release created on $(date)" > release.txt
+
+    - name: Publish Firmware Release
+      if: env.UPLOAD_RELEASE == 'true'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.release_tag }}
+        body_path: release.txt
+        files: ${{ env.FIRMWARE }}/*
+
+    - name: Cleanup Authentication
+      if: always()
+      run: rm -f ~/.netrc
