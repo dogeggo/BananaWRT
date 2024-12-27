@@ -39,7 +39,7 @@ jobs:
     - name: Clean up environment
       uses: Lyoko-Jeremie/js-rm-github-action@master
       with:
-        path: /workdir
+        path: /workdir/openwrt
 
     - name: Initialization environment
       env:
