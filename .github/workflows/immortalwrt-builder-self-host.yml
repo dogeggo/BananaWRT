@@ -142,4 +142,4 @@ jobs:
       if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/*"
+        sudo rm -rf "${{ runner.workspace }}"
