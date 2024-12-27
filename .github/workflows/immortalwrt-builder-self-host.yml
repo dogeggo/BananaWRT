@@ -138,28 +138,8 @@ jobs:
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
-    - name: Cleanup Workspace (After Build)
+    - name: Cleanup Workspace
       if: always()
       run: |
-        WORKSPACE="${{ runner.workspace }}"
-    
-        # Check and remove ~/.netrc
-        if [ -e ~/.netrc ]; then
-          echo "Removing ~/.netrc"
-          sudo rm -rf ~/.netrc
-        else
-          echo "~/.netrc does not exist, no action needed"
-        fi
-    
-        # Check and remove all files and directories in the workspace
-        if [ -d "$WORKSPACE" ]; then
-          echo "Removing all files and directories in $WORKSPACE"
-          for item in "$WORKSPACE"/*; do
-            if [ -e "$item" ]; then
-              echo "Removing: $item"
-              sudo rm -rf "$item"
-            fi
-          done
-        else
-          echo "Workspace $WORKSPACE does not exist, no action needed"
-        fi
+        sudo rm -rf ~/.netrc
+        sudo rm -rf "${{ runner.workspace }}/*"
