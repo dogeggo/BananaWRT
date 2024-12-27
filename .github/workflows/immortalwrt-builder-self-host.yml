@@ -25,8 +25,7 @@ jobs:
       uses: actions/checkout@main
 
     - name: Clean Workspace
-      run: |
-        sudo rm -rf ${{ runner.workspace }}/immortalwrt
+      uses: jstone28/runner-workspace-cleaner@v1.0.0
 
     - name: Set Up Build Environment
       env:
