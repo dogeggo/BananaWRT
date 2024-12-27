@@ -11,8 +11,9 @@
 #
 
 # Remove default packages from luci repository
-rm -rf package/feeds/luci/luci-app-modemband
-rm -rf package/feeds/packages/modemband
-rm -rf package/feeds/luci/luci-app-3ginfo-lite
-rm -rf package/feeds/luci/luci-i18n-modemband-*
-rm -rf package/feeds/luci/luci-app-sms-tool-js*
+rm -rf package/feeds/packages/lpac
+#rm -rf package/feeds/luci/luci-app-modemband
+#rm -rf package/feeds/packages/modemband
+#rm -rf package/feeds/luci/luci-app-3ginfo-lite
+#rm -rf package/feeds/luci/luci-i18n-modemband-*
+#rm -rf package/feeds/luci/luci-app-sms-tool-js*
