@@ -22,9 +22,29 @@ jobs:
 
     steps:
     - name: Cleanup Workspace (Before Build)
-      uses: Lyoko-Jeremie/js-rm-github-action@master
-      with:
-        path: ${{ runner.workspace }}/*
+      run: |
+        WORKSPACE="${{ runner.workspace }}"
+
+        # Check and remove ~/.netrc
+        if [ -e ~/.netrc ]; then
+          echo "Removing ~/.netrc"
+          sudo rm -rf ~/.netrc
+        else
+          echo "~/.netrc does not exist, no action needed"
+        fi
+
+        # Check and remove all files and directories in the workspace
+        if [ -d "$WORKSPACE" ]; then
+          echo "Removing all files and directories in $WORKSPACE"
+          for item in "$WORKSPACE"/*; do
+            if [ -e "$item" ]; then
+              echo "Removing: $item"
+              sudo rm -rf "$item"
+            fi
+          done
+        else
+          echo "Workspace $WORKSPACE does not exist, no action needed"
+        fi
 
     - name: Checkout Source Code
       uses: actions/checkout@main
@@ -56,7 +76,7 @@ jobs:
         git config --global user.email "actions@github.com"
         echo "machine github.com login ${{ secrets.PERSONAL_ACCESS_TOKEN }}" > ~/.netrc
         chmod 600 ~/.netrc
-        
+
     - name: Clone ImmortalWrt Repository
       working-directory: ${{ runner.workspace }}
       run: |
@@ -145,8 +165,26 @@ jobs:
 
     - name: Cleanup Workspace (After Build)
       if: always()
-      uses: Lyoko-Jeremie/js-rm-github-action@master
-      with:
-        path: |
-           ~/.netrc
-           ${{ runner.workspace }}/*
+      run: |
+        WORKSPACE="${{ runner.workspace }}"
+    
+        # Check and remove ~/.netrc
+        if [ -e ~/.netrc ]; then
+          echo "Removing ~/.netrc"
+          sudo rm -rf ~/.netrc
+        else
+          echo "~/.netrc does not exist, no action needed"
+        fi
+    
+        # Check and remove all files and directories in the workspace
+        if [ -d "$WORKSPACE" ]; then
+          echo "Removing all files and directories in $WORKSPACE"
+          for item in "$WORKSPACE"/*; do
+            if [ -e "$item" ]; then
+              echo "Removing: $item"
+              sudo rm -rf "$item"
+            fi
+          done
+        else
+          echo "Workspace $WORKSPACE does not exist, no action needed"
+        fi
