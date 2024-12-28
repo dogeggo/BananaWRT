@@ -5,10 +5,10 @@
 # Description: Build OpenWrt using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
+# Copyright (c) 2024 SuperKali <hello@superkali.me>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
-#
 
 name: BananaWRT Builder
 on:
