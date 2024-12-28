@@ -2,10 +2,12 @@ name: BananaWRT Builder
 on:
   repository_dispatch:
   workflow_dispatch:
+  schedule:
+    - cron: 0 */18 * * *
 
 env:
-  REPO_URL: https://github.com/openwrt/openwrt
-  REPO_BRANCH: 24.10.0-rc4
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: 24.10.0-rc3
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -55,57 +57,55 @@ jobs:
         echo "machine github.com login ${{ secrets.PERSONAL_ACCESS_TOKEN }}" > ~/.netrc
         chmod 600 ~/.netrc
 
-    - name: Clone OpenWRT Repository
+    - name: Clone ImmortalWRT Repository
       working-directory: ${{ runner.workspace }}
       run: |
-        git clone $REPO_URL -b v"$REPO_BRANCH" openwrt
+        git clone $REPO_URL -b v"$REPO_BRANCH" immortalwrt
 
     - name: Apply Custom Feeds Configuration
       run: |
-        [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/openwrt/feeds.conf.default
+        [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/immortalwrt/feeds.conf.default
         chmod +x ${{ env.DIY_P1_SH }}
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.DIY_P1_SH }}
 
     - name: Add Custom DTS Files
       run: |
-        cp -r dts/* ${{ runner.workspace }}/openwrt/target/linux/mediatek/dts/
+        cp -r dts/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
 
     - name: Update Package Feeds
       run: |
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         ./scripts/feeds update -a
 
     - name: Install Package Feeds
       run: |
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         ./scripts/feeds install -a
 
     - name: Apply Custom Configuration
       run: |
-        [ -e files ] && mv files ${{ runner.workspace }}/openwrt/files
-        [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/openwrt/.config
+        [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
+        [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
         chmod +x ${{ env.DIY_P2_SH }}
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
 
     - name: Diffconfig with current configuration
       run: |
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         ./scripts/diffconfig.sh > diffconfig
-        curl https://downloads.openwrt.org/releases/$REPO_BRANCH/targets/mediatek/filogic/config.buildinfo
+        curl https://downloads.immortalwrt.org/releases/$REPO_BRANCH/targets/mediatek/filogic/config.buildinfo
         cat diffconfig >> config.buildinfo
         mv config.buildinfo .config
         [ -n "$REPO_BRANCH" ] && sed -i \
-          -e 's|^CONFIG_KERNEL_BUILD_DOMAIN=.*|CONFIG_KERNEL_BUILD_DOMAIN="buildhost"|g' \
-          -e 's|^CONFIG_VERSION_DIST=.*|CONFIG_VERSION_DIST="OpenWrt"|g' \
-          -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.openwrt.org/releases/'"$REPO_BRANCH"'"|g' \
+          -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"$REPO_BRANCH"'"|g' \
           .config
 
 
     - name: Download Required Packages
       run: |
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         make defconfig
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
@@ -113,7 +113,7 @@ jobs:
 
     - name: Build Firmware
       run: |
-        cd ${{ runner.workspace }}/openwrt
+        cd ${{ runner.workspace }}/immortalwrt
         make -j$(nproc) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
@@ -126,11 +126,11 @@ jobs:
       uses: actions/upload-artifact@main
       with:
         name: BananaWRT_bin${{ env.FILE_DATE }}
-        path: ${{ runner.workspace }}/openwrt/bin
+        path: ${{ runner.workspace }}/immortalwrt/bin
 
     - name: Prepare Firmware for Upload
       run: |
-        cd ${{ runner.workspace }}/openwrt/bin/targets/*/*
+        cd ${{ runner.workspace }}/immortalwrt/bin/targets/*/*
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
 
@@ -159,4 +159,4 @@ jobs:
       if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/openwrt"
+        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
