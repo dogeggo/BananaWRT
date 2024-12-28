@@ -56,10 +56,9 @@ jobs:
         sudo apt-get -qq autoremove --purge -y
         sudo apt-get -qq clean
     
-        - name: Set timezone on the host
-        if: 
-        run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
-  
+    - name: Set timezone on the host
+      run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
+
     - name: Authenticate GitHub
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -168,7 +167,7 @@ jobs:
             templates/release-notes-template.md > release.txt
         
         echo "release_tag=${release_date}" >> $GITHUB_ENV
-        
+
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
       uses: softprops/action-gh-release@v2.2.0

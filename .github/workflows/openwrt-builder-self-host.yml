@@ -57,7 +57,6 @@ jobs:
         sudo apt-get -qq clean
     
     - name: Set timezone on the host
-      if: 
       run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
 
     - name: Authenticate GitHub
