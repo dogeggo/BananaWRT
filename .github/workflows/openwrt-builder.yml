@@ -96,6 +96,11 @@ jobs:
         curl https://downloads.openwrt.org/releases/$REPO_BRANCH/targets/mediatek/filogic/config.buildinfo
         cat diffconfig >> config.buildinfo
         mv config.buildinfo .config
+        [ -n "$REPO_BRANCH" ] && sed -i \
+          -e 's|^CONFIG_KERNEL_BUILD_DOMAIN=.*|CONFIG_KERNEL_BUILD_DOMAIN="buildhost"|g' \
+          -e 's|^CONFIG_VERSION_DIST=.*|CONFIG_VERSION_DIST="OpenWrt"|g' \
+          -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.openwrt.org/releases/'"$REPO_BRANCH"'"|g' \
+          .config
 
 
     - name: Download Required Packages
