@@ -88,6 +88,7 @@ jobs:
         chmod +x ${{ env.DIY_P2_SH }}
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
+        ./scripts/feeds install -p additional_pack -a
 
     - name: Diffconfig with current configuration
       run: |
