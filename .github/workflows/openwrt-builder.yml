@@ -157,9 +157,18 @@ jobs:
     - name: Create Release Tag
       if: env.UPLOAD_RELEASE == 'true'
       run: |
-        echo "release_tag=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
-        echo "Release created on $(date)" > release.txt
-
+        release_date=$(date +'%Y.%m.%d-%H%M')
+        firmware_version="ImmortalWRT ${REPO_BRANCH} Build"
+        target_devices=$(grep '^CONFIG_TARGET.*DEVICE.*=y' ${{ runner.workspace }}/immortalwrt/.config | sed -r 's/.*DEVICE_(.*)=y/\1/')
+        
+        sed -e "s|{{FIRMWARE_VERSION}}|${firmware_version}|g" \
+            -e "s|{{RELEASE_DATE}}|$(date '+%Y-%m-%d %H:%M:%S')|g" \
+            -e "s|{{BRANCH}}|${REPO_BRANCH}|g" \
+            -e "s|{{TARGET_DEVICES}}|${target_devices}|g" \
+            templates/release-notes-template.md > release.txt
+        
+        echo "release_tag=${release_date}" >> $GITHUB_ENV
+        
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
       uses: softprops/action-gh-release@v2.2.0
