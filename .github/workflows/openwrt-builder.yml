@@ -44,10 +44,10 @@ jobs:
         sudo apt-get -qq autoremove --purge -y
         sudo apt-get -qq clean
     
-    - name: Set timezone on the host
-      if: 
-      run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
-
+        - name: Set timezone on the host
+        if: 
+        run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
+  
     - name: Authenticate GitHub
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -91,7 +91,6 @@ jobs:
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
         ./scripts/feeds install -p additional_pack -a
-
 
     - name: Diffconfig with current configuration
       run: |
@@ -161,4 +160,4 @@ jobs:
       if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        sudo rm -rf "${{ runner.workspace }}/immortalwrt"  
