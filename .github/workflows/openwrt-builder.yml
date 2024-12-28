@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout Source Code
-      uses: actions/checkout@main
+      uses: actions/checkout@v4.2.2
 
     - name: Set Up Build Environment
       env:
@@ -124,7 +124,7 @@ jobs:
 
     - name: Upload Binary Files
       if: env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4.5.0
       with:
         name: BananaWRT_bin${{ env.FILE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
@@ -137,7 +137,7 @@ jobs:
 
     - name: Upload Firmware Files
       if: env.UPLOAD_FIRMWARE == 'true'
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4.5.0
       with:
         name: BananaWRT_firmware${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
@@ -150,14 +150,29 @@ jobs:
 
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2.2.0
       with:
         tag_name: ${{ env.release_tag }}
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
+    - name: Remove old Releases
+      uses: dev-drprasad/delete-older-releases@v0.3.4
+      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      with:
+        keep_latest: 7
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@v2.0.6
+      with:
+        retain_days: 0
+        keep_minimum_runs: 7
+
     - name: Cleanup Workspace
       if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/immortalwrt"  
+        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
