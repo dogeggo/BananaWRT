@@ -11,6 +11,7 @@
 #
 
 # Remove default packages from luci repository
+rm -rf package/feeds/packages/lpac
 rm -rf package/feeds/luci/luci-app-modemband
 rm -rf package/feeds/packages/modemband
 rm -rf package/feeds/luci/luci-app-3ginfo-lite
