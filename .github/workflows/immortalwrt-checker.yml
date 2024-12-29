@@ -1,0 +1,65 @@
+name: Bump ImmortalWRT Version
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-and-bump:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+
+    - name: Get the latest ImmortalWRT version
+      id: get_latest_version
+      run: |
+        latest_version=$(curl -s https://api.github.com/repos/immortalwrt/immortalwrt/tags | jq -r '.[0].name' | sed 's/^v//')
+        echo "latest_version=$latest_version" >> $GITHUB_ENV
+        echo "Latest version: $latest_version"
+
+    - name: Get the current version
+      id: get_current_version
+      run: |
+        current_version=$(grep 'REPO_BRANCH:' .github/workflows/immortalwrt-builder-*.yml | head -1 | awk '{print $2}')
+        echo "current_version=$current_version" >> $GITHUB_ENV
+        echo "Current version: $current_version"
+
+    - name: Check if a bump is needed
+      id: check_update
+      run: |
+        if [ "${{ env.latest_version }}" != "${{ env.current_version }}" ]; then
+          echo "needs_update=true" >> $GITHUB_ENV
+          echo "A bump is needed: ${current_version} -> ${latest_version}"
+        else
+          echo "needs_update=false" >> $GITHUB_ENV
+          echo "No bump needed."
+        fi
+
+    - name: Update REPO_BRANCH in YAML files
+      if: env.needs_update == 'true'
+      run: |
+        sed -i "s/REPO_BRANCH: .*/REPO_BRANCH: ${{ env.latest_version }}/" .github/workflows/immortalwrt-builder-*.yml
+        echo "Updated REPO_BRANCH to ${{ env.latest_version }} in all YAML files."
+
+    - name: Create a pull request
+      if: env.needs_update == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: bump-immortalwrt-${{ env.latest_version }}
+        commit-message: 'Bump ImmortalWRT to version v${{ env.latest_version }}'
+        title: 'Bump ImmortalWRT to version v${{ env.latest_version }}'
+        body: |
+          This pull request bumps ImmortalWRT to the latest version: v${{ env.latest_version }}.
+
+          Changes:
+          - Updated `REPO_BRANCH:` to `v${{ env.latest_version }}` in `.github/workflows/immortalwrt-builder-*.yml`.
+        labels: bump, immortalwrt, v${{ env.latest_version }}
