@@ -1,7 +1,7 @@
 #
 # https://github.com/P3TERX/Actions-OpenWrt
 #
-# File: .github/workflows/immortalwrt-bulder.yml
+# File: .github/workflows/immortalwrt-builder.yml
 # Description: Build ImmortalWRT using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>

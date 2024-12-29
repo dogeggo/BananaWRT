@@ -1,8 +1,8 @@
 #
 # https://github.com/P3TERX/Actions-OpenWrt
 #
-# File: .github/workflows/immortalwrt-bulder-selfhost.yml
-# Description: Build ImmortalWRT using GitHub Actions
+# File: .github/workflows/immortalwrt-builder-selfhost.yml
+# Description: Build ImmortalWRT (Self Hosted) using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
 # Copyright (c) 2024 SuperKali <hello@superkali.me>
