@@ -14,28 +14,29 @@
 ## Hardware Specifications
 
 ### Banana Pi R3 Mini
-
-| Specification                | Details                               |
-|------------------------------|---------------------------------------|
+| Specification                | Details                                     |
+|------------------------------|---------------------------------------------|
 | **CPU**                      | MediaTek MT7986B (quad-core ARM Cortex-A53) |
-| **RAM**                      | 2GB DDR4                             |
-| **Storage**                  | 8GB eMMC, microSD slot, USB support  |
-| **Networking**               | 2x 2.5GbE Ethernet ports             |
-| **Wi-Fi**                    | Dual-band Wi-Fi 6 (802.11ax)         |
-| **Hardware Acceleration**    | Offloading for Wi-Fi and NAT         |
-| **Expansion**                | 1x PCIe slot                         |
-| **Power**                    | 12V/2A DC input                      |
+| **RAM**                      | 2GB DDR4                                    |
+| **Storage**                  | 8GB eMMC, microSD slot, USB support         |
+| **Networking**               | 2x 2.5GbE Ethernet ports                    |
+| **Wi-Fi**                    | Dual-band Wi-Fi 6 (802.11ax)                |
+| **Hardware Acceleration**    | Offloading for Wi-Fi and NAT                |
+| **Expansion**                | 1x PCIe slot                                |
+| **Power**                    | 12V/2A DC input                             |
 
 ### Fibocom FM350
 
-| Specification                | Details                               |
-|------------------------------|---------------------------------------|
-| **Modem Type**               | 5G NR Sub-6GHz / LTE / WCDMA         |
-| **Max Download Speed**       | 4.7 Gbps                             |
-| **Max Upload Speed**         | 2.5 Gbps                             |
-| **Interface**                | M.2 PCIe (USB 3.0)                   |
-| **GPS**                      | Supported                            |
-| **Power**                    | 3.3V DC                              |
+| Specification                | Details                                       |
+|------------------------------|-----------------------------------------------|
+| **Modem Type**               | 5G NR Sub-6GHz / LTE / WCDMA                  |
+| **Max Download Speed**       | 4.67 Gbps                                     |
+| **Max Upload Speed**         | 1.25 Gbps                                     |
+| **NR Bands**                 | n1/2/3/7/25/28/30/38/40/41/48/66/77/78/79     |
+| **LTE Bands**                | b1/2/3/4/7/25/30/32/34/38/39/40/41/42/43/48/66|
+| **Interface**                | M.2 Key-B (USB 3.1 Gen1) or (PCIe Gen3 x1)    |
+| **GPS**                      | Supported                                     |
+| **Power**                    | 3.3V DC                                       |
 
 ---
 
