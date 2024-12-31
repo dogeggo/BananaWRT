@@ -1,4 +1,10 @@
-# BananaWRT
+<div style="text-align: center; margin-top: 20px;">
+
+  <img src="https://cdn.superkali.me/1113423827479274/bananawrt-logo.png" alt="BananaWRT Logo" style="width: 350px; height: auto; margin-bottom: -100px;">
+
+  <h2 style="font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 20px;">BananaWRT</h2>
+  
+</div>
 
 **BananaWRT** is a custom distribution based on **ImmortalWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
 
