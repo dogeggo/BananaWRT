@@ -163,7 +163,6 @@ jobs:
         sed -e "s|{{BANANAWRT_KERNEL}}|${kernel_version}|g" \
             -e "s|{{BANANAWRT_VERSION}}|${REPO_BRANCH}|g" \
             -e "s|{{RELEASE_DATE}}|$(date '+%Y-%m-%d %H:%M:%S')|g" \
-            -e "s|{{BRANCH}}|${REPO_BRANCH}|g" \
             -e "s|{{TARGET_DEVICES}}|${target_devices}|g" \
             templates/release-notes-template.md > release.txt
         
