@@ -77,6 +77,12 @@ jobs:
           echo "Updated REPO_BRANCH in $file to ${{ env.latest_version }}."
         done
 
+    - name: Update userscript with new VERSION
+      if: env.needs_update == 'true'
+      run: |
+        sed -i "s/VERSION=.*/VERSION=${{ env.latest_version }}/" scripts/update-script.sh
+        echo "Updated VERSION in update-script.sh to ${{ env.latest_version }}."
+
     - name: Create a pull request
       if: env.needs_update == 'true'
       uses: peter-evans/create-pull-request@v5
