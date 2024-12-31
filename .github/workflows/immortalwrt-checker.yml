@@ -77,12 +77,17 @@ jobs:
           echo "Updated REPO_BRANCH in $file to ${{ env.latest_version }}."
         done
 
-    - name: Update userscript with new VERSION
+    - name: Check and update VERSION of the update-script
       if: env.needs_update == 'true'
       run: |
-        sed -i "s/VERSION=.*/VERSION=${{ env.latest_version }}/" scripts/update-script.sh
-        echo "Updated VERSION in update-script.sh to ${{ env.latest_version }}."
-
+        current_version=$(grep -oP 'VERSION=\K.*' scripts/update-script.sh)
+        if [ "$current_version" == "${{ env.latest_version }}" ]; then
+          echo "Everything is up-to-date. VERSION is already set to $current_version."
+        else
+          sed -i "s/VERSION=.*/VERSION=${{ env.latest_version }}/" scripts/update-script.sh
+          echo "Updated VERSION in update-script.sh to ${{ env.latest_version }}."
+        fi
+        
     - name: Create a pull request
       if: env.needs_update == 'true'
       uses: peter-evans/create-pull-request@v5
@@ -97,7 +102,8 @@ jobs:
           ${{ env.files_to_update }}
 
           Changes:
-          - Updated `REPO_BRANCH:` to `v${{ env.latest_version }}`.
+          - Updated `REPO_BRANCH` to `v${{ env.latest_version }}`.
+          - Updated `VERSION` to `v${{ env.latest_version }}`.
         labels: bump, immortalwrt, v${{ env.latest_version }}
 
     - name: Delete workflow runs
