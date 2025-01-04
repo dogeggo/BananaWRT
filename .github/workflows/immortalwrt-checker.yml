@@ -87,6 +87,20 @@ jobs:
           sed -i "s/VERSION=.*/VERSION=${{ env.latest_version }}/" scripts/update-script.sh
           echo "Updated VERSION in update-script.sh to ${{ env.latest_version }}."
         fi
+    
+    - name: Check and update CONFIG_VERSION_REPO in .config
+      if: env.needs_update == 'true'
+      run: |
+        current_repo=$(grep -oP '^CONFIG_VERSION_REPO=\K.*' .config)
+        latest_repo="https://downloads.immortalwrt.org/releases/${{ env.REPO_BRANCH }}"
+        if [ "$current_repo" == "\"$latest_repo\"" ]; then
+          echo "Everything is up-to-date. CONFIG_VERSION_REPO is already set to $current_repo."
+        else
+          sed -i \
+            -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="'"$latest_repo"'"|g' \
+            .config
+          echo "Updated CONFIG_VERSION_REPO in .config to $latest_repo."
+        fi
         
     - name: Create a pull request
       if: env.needs_update == 'true'
