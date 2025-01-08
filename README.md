@@ -4,8 +4,7 @@
   
   [![Builder](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder.yml?label=Builder&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder.yml)
   [![Checker](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-checker.yml?label=Checker&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-checker.yml)
-  [![Downloads](https://img.shields.io/github/downloads/SuperKali/BananaWRT/latest/total?style=for-the-badge&label=Downloads&logo=github)](https://github.com/SuperKali/BananaWRT/releases/latest)
-
+  
 </div>
 
 
