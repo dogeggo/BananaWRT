@@ -1,7 +1,13 @@
 <div align="center">
   <img src="https://cdn.superkali.me/1113423827479274/bananawrt-logo.png" alt="BananaWRT Logo" width="350px" height="auto">
   <h2>BananaWRT</h2>
+  
+  [![Builder](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder.yml?label=Builder&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder.yml)
+  [![Checker](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-checker.yml?label=Checker&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-checker.yml)
+  [![Downloads](https://img.shields.io/github/downloads/SuperKali/BananaWRT/latest/total?style=for-the-badge&label=Downloads&logo=github)](https://github.com/SuperKali/BananaWRT/releases/latest)
+
 </div>
+
 
 **BananaWRT** is a custom distribution based on **ImmortalWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
 
