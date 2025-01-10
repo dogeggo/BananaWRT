@@ -48,8 +48,14 @@
 
 ---
 
+## ⭐ Star History
 
-## Contributions
+If you find this project useful, consider giving it a star ⭐. It’s a great way to show your support and helps me stay motivated to improve and grow the project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=SuperKali/BananaWRT&type=Date)](https://star-history.com/#SuperKali/BananaWRT&Date)
+
+
+## 🔧 Contributions
 
 Contributions are welcome! Please open issues for bugs or feature requests and submit pull requests for code changes.
 
