@@ -3,7 +3,7 @@
   <img src="https://cdn.superkali.me/1113423827479274/bananawrt-logo.png" alt="BananaWRT Logo" width="350">
 </p>
 
-<h2 align="center">BananaWRT Release</h2>
+<h2 align="center">BananaWRT {{RELEASE_TYPE}} Release</h2>
 
 - 🕛 **Date**: {{RELEASE_DATE}}
 - 🛜 **Target Devices:** {{TARGET_DEVICES}}

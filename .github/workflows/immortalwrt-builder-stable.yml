@@ -1,27 +1,27 @@
 #
 # https://github.com/P3TERX/Actions-OpenWrt
 #
-# File: .github/workflows/immortalwrt-builder.yml
+# File: .github/workflows/immortalwrt-builder-stable.yml
 # Description: Build ImmortalWRT using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-# Copyright (c) 2024 SuperKali <hello@superkali.me>
+# Copyright (c) 2024-2025 SuperKali <hello@superkali.me>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
 
-name: BananaWRT Builder
+name: BananaWRT Builder (Stable)
 on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
-    - cron: 0 0 * * 0
+    - cron: 0 0 1 * *
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: 24.10.0-rc3
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: .config
+  CONFIG_FILE: config/stable/.config
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -159,8 +159,10 @@ jobs:
         release_date=$(date +'%Y.%m.%d-%H%M')
         kernel_version=$(find ${{ runner.workspace }}/immortalwrt/build_dir/target-*/linux-*/ -type d -regex '.*/linux-[0-9]+\.[0-9]+.*' | head -n 1 | sed -E 's|.*/linux-||')
         target_devices=$(grep '^CONFIG_TARGET.*DEVICE.*=y' ${{ runner.workspace }}/immortalwrt/.config | sed -r 's/.*DEVICE_(.*)=y/\1/')
-        
+        release_type='Stable'
+
         sed -e "s|{{BANANAWRT_KERNEL}}|${kernel_version}|g" \
+            -e "s|{{RELEASE_TYPE}}|${release_type}|g" \
             -e "s|{{BANANAWRT_VERSION}}|${REPO_BRANCH}|g" \
             -e "s|{{RELEASE_DATE}}|$(date '+%Y-%m-%d %H:%M:%S')|g" \
             -e "s|{{TARGET_DEVICES}}|${target_devices}|g" \

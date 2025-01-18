@@ -1,7 +1,7 @@
 # File: .github/workflows/immortalwrt-checker.yml
 # Description: Bump ImmortalWRT Version using GitHub Actions
 #
-# Copyright (c) 2024 SuperKali <hello@superkali.me>
+# Copyright (c) 2024-2025 SuperKali <hello@superkali.me>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
@@ -45,7 +45,7 @@ jobs:
           exit 1
         fi
         files_to_update=()
-        for file in .github/workflows/immortalwrt-builder*.yml; do
+        for file in .github/workflows/immortalwrt-builder*{selfhost,nightly}*.yml; do
           if [ -f "$file" ]; then
             file_version=$(grep -m 1 'REPO_BRANCH:' "$file" | awk -F': ' '{if (NF > 1) {gsub(/^ +| +$/, "", $2); print $2}}')
             if [ "$file_version" != "${{ env.latest_version }}" ]; then
@@ -81,7 +81,7 @@ jobs:
       id: check_config_repo
       run: |
         latest_repo="https://downloads.immortalwrt.org/releases/${{ env.latest_version }}"
-        current_repo=$(grep -oP '^CONFIG_VERSION_REPO=\K.*' .config)
+        current_repo=$(grep -oP '^CONFIG_VERSION_REPO=\K.*' config/nightly/.config)
         if [ "$current_repo" != "\"$latest_repo\"" ]; then
           echo "CONFIG_VERSION_REPO in .config needs update: $current_repo -> $latest_repo"
           echo "config_repo_needs_update=true" >> $GITHUB_ENV
@@ -94,7 +94,7 @@ jobs:
       if: env.config_repo_needs_update == 'true'
       run: |
         latest_repo="https://downloads.immortalwrt.org/releases/${{ env.latest_version }}"
-        sed -i 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="'"$latest_repo"'"|g' .config
+        sed -i 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="'"$latest_repo"'"|g' config/nightly/.config
         echo "Updated CONFIG_VERSION_REPO in .config to $latest_repo."
 
     - name: Check VERSION in scripts/update-script.sh
@@ -138,8 +138,8 @@ jobs:
           - Updated `VERSION` in `scripts/update-script.sh`.
           {% endif %}
 
-          Labels: bump, immortalwrt, v${{ env.latest_version }}
-        labels: bump, immortalwrt, v${{ env.latest_version }}
+          Labels: bump, immortalwrt, nightly, v${{ env.latest_version }}
+        labels: bump, immortalwrt, nightly, v${{ env.latest_version }}
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@v2.0.6

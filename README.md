@@ -2,7 +2,8 @@
   <img src="https://cdn.superkali.me/1113423827479274/bananawrt-logo.png" alt="BananaWRT Logo" width="350px" height="auto">
   <h2>BananaWRT</h2>
   
-  [![Builder](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder.yml?label=Builder&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder.yml)
+  [![Stable](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder-stable.yml?label=Stable&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder-stable.yml)
+  [![Nightly](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder-nightly.yml?label=Nightly&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder-nightly.yml)
   [![Checker](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-checker.yml?label=Checker&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-checker.yml)
   
 </div>
