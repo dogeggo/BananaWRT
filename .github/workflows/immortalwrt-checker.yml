@@ -45,7 +45,7 @@ jobs:
           exit 1
         fi
         files_to_update=()
-        for file in .github/workflows/immortalwrt-builder*{selfhost,nightly}*.yml; do
+        for file in .github/workflows/immortalwrt-builder*{nightly}*.yml; do
           if [ -f "$file" ]; then
             file_version=$(grep -m 1 'REPO_BRANCH:' "$file" | awk -F': ' '{if (NF > 1) {gsub(/^ +| +$/, "", $2); print $2}}')
             if [ "$file_version" != "${{ env.latest_version }}" ]; then
