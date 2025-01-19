@@ -20,8 +20,9 @@ on:
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: 24.10.0-rc3
+  RELEASE: stable
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: config/stable/.config
+  CONFIG_FILE: config/${{ github.env.RELEASE }}/.config
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   UPLOAD_BIN_DIR: false
@@ -82,7 +83,7 @@ jobs:
 
     - name: Add Custom DTS Files
       run: |
-        cp -r dts/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        cp -r dts/${{ env.RELEASE }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
 
     - name: Update Package Feeds
       run: |
