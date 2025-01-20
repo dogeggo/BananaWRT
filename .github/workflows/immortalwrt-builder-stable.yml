@@ -26,6 +26,7 @@ env:
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
   UPLOAD_BIN_DIR: false
+  UPLOAD_PACKAGE_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Europe/Rome
@@ -140,6 +141,13 @@ jobs:
       with:
         name: BananaWRT_bin${{ env.FILE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
+    
+    - name: Upload Custom Packages
+      if: env.UPLOAD_PACKAGE_DIR == 'true'
+      uses: actions/upload-artifact@v4.5.0
+      with:
+        name: BananaWRT_packages${{ env.FILE_DATE }}
+        path: ${{ runner.workspace }}/immortalwrt/bin/packages/*/additional_pack/*.ipk
 
     - name: Prepare Firmware for Upload
       run: |
