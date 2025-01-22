@@ -26,6 +26,14 @@ on:
           - stable
           - nightly
         default: stable
+      architecture:
+        description: 'Select the host architecture'
+        required: true
+        type: choice
+        options:
+          - amd64
+          - arm64
+        default: amd64 
       version_system:
         description: 'Write the version of ImmortalWRT to use'
         type: string
@@ -47,7 +55,7 @@ env:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: [self-hosted, "${{ github.event.inputs.architecture }}"]
 
     steps:
     - name: Checkout Source Code
