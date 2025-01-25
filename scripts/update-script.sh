@@ -39,8 +39,15 @@ fi
 
 echo 0 > /sys/block/mmcblk0boot0/force_ro
 
+echo "Clearing the preloader partition (/dev/mmcblk0boot0)..."
+dd if=/dev/zero of=/dev/mmcblk0boot0 bs=1M count=4
+if [ $? -ne 0 ]; then
+  echo "Error clearing the preloader partition."
+  exit 1
+fi
+
 echo "Writing the preloader to /dev/mmcblk0boot0..."
-dd if="$EMMC_PRELOADER" of=/dev/mmcblk0boot0
+dd if="$EMMC_PRELOADER" of=/dev/mmcblk0boot0 bs=1M
 if [ $? -ne 0 ]; then
   echo "Error flashing the preloader."
   exit 1
@@ -48,8 +55,15 @@ fi
 echo "Preloader written successfully."
 sleep 2
 
+echo "Clearing the BL31 U-Boot partition (/dev/mmcblk0p3)..."
+dd if=/dev/zero of=/dev/mmcblk0p3 bs=1M count=4
+if [ $? -ne 0 ]; then
+  echo "Error clearing the BL31 U-Boot partition."
+  exit 1
+fi
+
 echo "Writing the BL31 U-Boot to /dev/mmcblk0p3..."
-dd if="$EMMC_BL31_UBOOT" of=/dev/mmcblk0p3
+dd if="$EMMC_BL31_UBOOT" of=/dev/mmcblk0p3 bs=1M
 if [ $? -ne 0 ]; then
   echo "Error flashing the BL31 U-Boot."
   exit 1
@@ -57,8 +71,15 @@ fi
 echo "BL31 U-Boot written successfully."
 sleep 2
 
+echo "Clearing the initramfs recovery partition (/dev/mmcblk0p4)..."
+dd if=/dev/zero of=/dev/mmcblk0p4 bs=1M count=4
+if [ $? -ne 0 ]; then
+  echo "Error clearing the initramfs recovery partition."
+  exit 1
+fi
+
 echo "Writing the initramfs recovery to /dev/mmcblk0p4..."
-dd if="$EMMC_INITRAMFS" of=/dev/mmcblk0p4
+dd if="$EMMC_INITRAMFS" of=/dev/mmcblk0p4 bs=1M
 if [ $? -ne 0 ]; then
   echo "Error flashing the initramfs recovery."
   exit 1
@@ -70,7 +91,8 @@ sync
 echo "Writing completed successfully."
 
 echo "Performing sysupgrade with the file $SYSUPGRADE_IMG..."
-sysupgrade -F -c "$SYSUPGRADE_IMG"
+sleep 5
+sysupgrade "$SYSUPGRADE_IMG"
 if [ $? -ne 0 ]; then
   echo "Error during sysupgrade."
   exit 1
