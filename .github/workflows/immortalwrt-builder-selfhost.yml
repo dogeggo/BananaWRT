@@ -38,7 +38,7 @@ on:
         description: 'Write the version of ImmortalWRT to use'
         type: string
         required: true
-        default: '24.10.0-rc3'
+        default: '24.10.0-rc4'
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
