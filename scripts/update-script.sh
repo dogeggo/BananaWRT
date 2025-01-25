@@ -1,5 +1,12 @@
 #!/bin/sh
 
+VERSION=24.10.0-rc4
+EMMC_PRELOADER="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-emmc-preloader.bin"
+EMMC_BL31_UBOOT="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-emmc-bl31-uboot.fip"
+EMMC_INITRAMFS="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-initramfs-recovery.itb"
+SYSUPGRADE_IMG="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-squashfs-sysupgrade.itb"
+
+
 echo -e "\033[1;36m"
 echo "    ____                               _       ______  ______"
 echo "   / __ )____ _____  ____ _____  ____ | |     / / __ \/_  __/"
@@ -7,6 +14,18 @@ echo "  / __  / __ \`/ __ \/ __ \`/ __ \/ __ \`/ | /| / / /_/ / / /   "
 echo " / /_/ / /_/ / / / / /_/ / / / / /_/ /| |/ |/ / _, _/ / /    "
 echo "/_____/\__,_/_/ /_/\__,_/_/ /_/\__,_/ |__/|__/_/ |_| /_/     "
 echo -e "\033[1;33m          BananaWrt - The Ultimate System Updater 🚀       \033[0m"
+echo ""
+echo -e "\033[1;33m Ensure all required files are present in the \033[1;31m/tmp\033[1;33m directory:"
+echo -e " - immortalwrt-\033[1;36m${VERSION}\033[1;33m-mediatek-filogic-bananapi_bpi-r3-mini-emmc-preloader.bin"
+echo -e " - immortalwrt-\033[1;36m${VERSION}\033[1;33m-mediatek-filogic-bananapi_bpi-r3-mini-emmc-bl31-uboot.fip"
+echo -e " - immortalwrt-\033[1;36m${VERSION}\033[1;33m-mediatek-filogic-bananapi_bpi-r3-mini-initramfs-recovery.itb"
+echo -e " - immortalwrt-\033[1;36m${VERSION}\033[1;33m-mediatek-filogic-bananapi_bpi-r3-mini-squashfs-sysupgrade.itb"
+echo -e "\033[0m"
+
+echo ""
+echo -e "\033[1;33m Press Enter to continue or CTRL+C to abort."
+echo -e "\033[0m"
+read dummy
 
 log_info() {
   echo -e "\033[1;36m[INFO] $1\033[0m"
@@ -19,12 +38,6 @@ log_success() {
 log_error() {
   echo -e "\033[1;31m[ERROR] $1\033[0m"
 }
-
-VERSION=24.10.0-rc4
-EMMC_PRELOADER="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-emmc-preloader.bin"
-EMMC_BL31_UBOOT="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-emmc-bl31-uboot.fip"
-EMMC_INITRAMFS="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-initramfs-recovery.itb"
-SYSUPGRADE_IMG="/tmp/immortalwrt-${VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-squashfs-sysupgrade.itb"
 
 version_greater() {
   printf '%s\n%s\n' "$1" "$2" | sort -V | head -n 1 | grep -q "^$2$"
