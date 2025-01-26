@@ -25,7 +25,7 @@ gperf haveged help2man intltool libelf-dev libglib2.0-dev libgmp3-dev libltdl-de
 libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev \
 lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip \
 python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools \
-subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd"
+subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd gh git"
 
 X86_64_PACKAGES="gcc-multilib g++-multilib libc6-dev-i386 lib32gcc-s1"
 AARCH64_PACKAGES="libc6-dev"
