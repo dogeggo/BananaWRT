@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./functions/formatter.sh
+source functions/formatter.sh
 
 ACTION=$1
 
