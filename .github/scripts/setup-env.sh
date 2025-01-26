@@ -35,25 +35,16 @@ manage_packages() {
     local action=$2
 
     for pkg in $packages; do
-        if dpkg -l | grep -qw "$pkg"; then
-            if [ "$action" == "setup" ]; then
-                success "Package $pkg is already installed."
-            elif [ "$action" == "clean" ]; then
-                info "Removing package: $pkg"
-                sudo apt -qq remove --purge -y "$pkg" >/dev/null 2>&1 && \
-                success "Package $pkg removed successfully." || \
-                error "Failed to remove package $pkg."
-            fi
-        else
-            if [ "$action" == "setup" ]; then
-                info "Installing package: $pkg"
-                echo "$pkg" | sudo debconf-set-selections >/dev/null 2>&1
-                sudo apt -qq install -y "$pkg" >/dev/null 2>&1 && \
-                success "Package $pkg installed successfully." || \
-                error "Failed to install package $pkg."
-            elif [ "$action" == "clean" ]; then
-                success "Package $pkg is not installed."
-            fi
+        if [ "$action" == "setup" ]; then
+            info "Installing package: $pkg"
+            sudo apt -qq install -y "$pkg" >/dev/null 2>&1 && \
+            success "Package $pkg installed successfully." || \
+            error "Failed to install package $pkg."
+        elif [ "$action" == "clean" ]; then
+            info "Removing package: $pkg"
+            sudo apt -qq remove --purge -y "$pkg" >/dev/null 2>&1 && \
+            success "Package $pkg removed successfully." || \
+            error "Failed to remove package $pkg."
         fi
     done
 }
