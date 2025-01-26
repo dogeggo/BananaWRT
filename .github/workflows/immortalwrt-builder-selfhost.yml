@@ -65,7 +65,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        /bin/bash .github/scripts/setup-env.sh
+        /bin/bash .github/scripts/setup-env.sh setup
         
     - name: Set timezone on the host
       run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
@@ -220,4 +220,5 @@ jobs:
       if: always()
       run: |
         sudo rm -rf ~/.netrc
+        /bin/bash .github/scripts/setup-env.sh clean
         sudo rm -rf "${{ runner.workspace }}/immortalwrt"
