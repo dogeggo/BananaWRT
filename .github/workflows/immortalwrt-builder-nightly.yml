@@ -44,7 +44,7 @@ jobs:
       run: |
         sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
         sudo docker image prune --all --force
-        .github/scripts/setup-env.sh
+        /bin/bash .github/scripts/setup-env.sh
     
     - name: Set timezone on the host
       run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
