@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source functions/formatter.sh
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+
+source "$SCRIPT_DIR/functions/formatter.sh"
 
 ACTION=$1
 
