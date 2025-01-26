@@ -220,5 +220,4 @@ jobs:
       if: always()
       run: |
         sudo rm -rf ~/.netrc
-        /bin/bash .github/scripts/setup-env.sh clean
         sudo rm -rf "${{ runner.workspace }}/immortalwrt"
