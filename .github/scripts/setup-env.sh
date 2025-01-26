@@ -11,6 +11,8 @@ if [ -z "$ACTION" ]; then
     exit 1
 fi
 
+export DEBIAN_FRONTEND=noninteractive
+
 info "Updating package list..."
 sudo apt -qq update
 
@@ -45,6 +47,7 @@ manage_packages() {
         else
             if [ "$action" == "setup" ]; then
                 info "Installing package: $pkg"
+                echo "$pkg" | sudo debconf-set-selections >/dev/null 2>&1
                 sudo apt -qq install -y "$pkg" >/dev/null 2>&1 && \
                 success "Package $pkg installed successfully." || \
                 error "Failed to install package $pkg."
