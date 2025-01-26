@@ -13,7 +13,7 @@ libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
 libssl-dev libtool lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch \
 pkgconf python3 python3-pyelftools python3-setuptools qemu-utils \
 rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip \
-vim wget xmlto xxd zlib1g-dev"
+vim wget xmlto xxd zlib1g-dev xz-utils"
 
 X86_64_PACKAGES="gcc-multilib g++-multilib libc6-dev-i386 python2.7 help2man intltool"
 AARCH64_PACKAGES="libc6-dev"
