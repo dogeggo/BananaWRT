@@ -19,7 +19,7 @@ on:
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  RELEASE: nightly
+  BANANAWRT_RELEASE: nightly
   REPO_BRANCH: 24.10.0-rc4
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: config/nightly/.config
@@ -70,7 +70,7 @@ jobs:
 
     - name: Add Custom DTS Files
       run: |
-        cp -r dts/${{env.RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        cp -r dts/${{env.BANANAWRT_RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
 
     - name: Update Package Feeds
       run: |
