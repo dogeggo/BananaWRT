@@ -72,14 +72,10 @@ jobs:
       run: |
         cp -r dts/${{env.BANANAWRT_RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
 
-    - name: Update Package Feeds
-      run: |
-        cd ${{ runner.workspace }}/immortalwrt
+    - name: Update and Install Package Feeds
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |  
         ./scripts/feeds update -a
-
-    - name: Install Package Feeds
-      run: |
-        cd ${{ runner.workspace }}/immortalwrt
         ./scripts/feeds install -a
 
     - name: Apply Custom Configuration
@@ -92,8 +88,8 @@ jobs:
         ./scripts/feeds install -p additional_pack -a
 
     - name: Diffconfig with current configuration
+      working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-        cd ${{ runner.workspace }}/immortalwrt
         ./scripts/diffconfig.sh > diffconfig
         curl https://downloads.immortalwrt.org/releases/$REPO_BRANCH/targets/mediatek/filogic/config.buildinfo
         cat diffconfig >> config.buildinfo
@@ -101,19 +97,11 @@ jobs:
         [ -n "$REPO_BRANCH" ] && sed -i \
           -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"$REPO_BRANCH"'"|g' \
           .config
-
-
-    - name: Download Required Packages
-      run: |
-        cd ${{ runner.workspace }}/immortalwrt
         make defconfig
-        make download -j$(nproc)
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
 
     - name: Build Firmware
+      working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-        cd ${{ runner.workspace }}/immortalwrt
         make -j$(nproc) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV

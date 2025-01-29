@@ -126,7 +126,7 @@ jobs:
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
 
-        make -j$(nproc) ||  make -j$(nproc) || make -j1 V=s
+        make -j$(nproc) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
