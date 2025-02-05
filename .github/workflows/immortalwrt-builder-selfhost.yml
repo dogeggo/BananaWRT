@@ -120,8 +120,15 @@ jobs:
         [ -n "$REPO_BRANCH" ] && sed -i \
           -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"$REPO_BRANCH"'"|g' \
           .config
-        make defconfig
 
+    - name: Download Required Packages
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        make defconfig
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+        
     - name: Build Firmware
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
