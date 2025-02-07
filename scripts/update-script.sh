@@ -116,10 +116,12 @@ if echo "$SYSUPGRADE_LOG" | grep -q "The device is supported, but the config is 
 fi
 
 log_info "Performing sysupgrade with the file $SYSUPGRADE_IMG..."
-sysupgrade "$SYSUPGRADE_IMG"
-if [ $? -ne 0 ]; then
-  log_error "Error during sysupgrade."
+sleep 2
+SYSUPGRADE_OUTPUT=$(sysupgrade "$SYSUPGRADE_IMG" 2>&1)
+if echo "$SYSUPGRADE_OUTPUT" | grep -q "Commencing upgrade"; then
+  log_success "Sysupgrade process initiated successfully. Device is rebooting..."
+else
+  log_error "Sysupgrade failed or unexpected behavior detected."
+  echo "$SYSUPGRADE_OUTPUT"
   exit 1
 fi
-
-log_success "Sysupgrade completed successfully. Rebooting..."
