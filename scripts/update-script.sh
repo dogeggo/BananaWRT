@@ -102,8 +102,6 @@ log_success "Writing completed successfully."
 
 log_info "Performing sysupgrade check with the file $SYSUPGRADE_IMG..."
 SYSUPGRADE_LOG=$(sysupgrade -T "$SYSUPGRADE_IMG" 2>&1)
-echo "$SYSUPGRADE_LOG"
-
 if echo "$SYSUPGRADE_LOG" | grep -q "The device is supported, but the config is incompatible"; then
   REQUIRED_VERSION=$(echo "$SYSUPGRADE_LOG" | grep "incompatible" | awk -F'->' '{print $2}' | awk -F')' '{print $1}' | tr -d '[:space:]')
   if [ -n "$REQUIRED_VERSION" ]; then
@@ -117,11 +115,4 @@ fi
 
 log_info "Performing sysupgrade with the file $SYSUPGRADE_IMG..." 
 sleep 2
-
-SYSUPGRADE_OUTPUT=$(sysupgrade "$SYSUPGRADE_IMG" 2>&1)
-if echo "$SYSUPGRADE_OUTPUT" | ! grep -q "Commencing upgrade"; then
-  log_error "Sysupgrade failed or unexpected behavior detected:"
-  echo "$SYSUPGRADE_OUTPUT"
-  exit 1
-fi
-log_success "Sysupgrade process initiated successfully. Device is rebooting..."
+sysupgrade "$SYSUPGRADE_IMG"
