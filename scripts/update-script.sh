@@ -142,14 +142,16 @@ if [ "$MODE" = "fota" ]; then
                 ;;
         esac
         prefix="\033[1;36mDownloading $filename...\033[0m"
-        printf "%b " "$prefix"
         asset_url=$(echo "$RELEASES_JSON" | jq -r ".[$index].assets[] | select(.name==\"$filename\") | .browser_download_url")
         [ -z "$asset_url" ] || [ "$asset_url" = "null" ] && { log_error "Asset $filename not found for release $RELEASE_TAG."; exit 1; }
+
         if [ "$DRY_RUN" -eq 1 ]; then
+            printf "%b\n" "$prefix"
             log_info "DRY-RUN: Simulated download of $filename from $asset_url"
             touch "/tmp/$filename"
             echo ""
         else
+            printf "%b " "$prefix"
             ( curl -s -L -o "/tmp/$filename" "$asset_url" ) &
             curl_pid=$!
             spinner_with_prefix $curl_pid "$prefix"
