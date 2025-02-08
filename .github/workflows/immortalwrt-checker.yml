@@ -97,26 +97,8 @@ jobs:
         sed -i 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="'"$latest_repo"'"|g' config/nightly/.config
         echo "Updated CONFIG_VERSION_REPO in .config to $latest_repo."
 
-    - name: Check VERSION in scripts/update-script.sh
-      id: check_version_script
-      run: |
-        current_version=$(grep -oP '^VERSION=\K.*' scripts/update-script.sh)
-        if [ "$current_version" != "${{ env.latest_version }}" ]; then
-          echo "VERSION in scripts/update-script.sh needs update: $current_version -> ${{ env.latest_version }}"
-          echo "version_needs_update=true" >> $GITHUB_ENV
-        else
-          echo "VERSION in scripts/update-script.sh is up-to-date."
-          echo "version_needs_update=false" >> $GITHUB_ENV
-        fi
-
-    - name: Update VERSION in scripts/update-script.sh
-      if: env.version_needs_update == 'true'
-      run: |
-        sed -i "s/^VERSION=.*/VERSION=${{ env.latest_version }}/" scripts/update-script.sh
-        echo "Updated VERSION in scripts/update-script.sh to ${{ env.latest_version }}."
-
     - name: Create a pull request
-      if: env.repo_branch_needs_update == 'true' || env.config_repo_needs_update == 'true' || env.version_needs_update == 'true'
+      if: env.repo_branch_needs_update == 'true' || env.config_repo_needs_update == 'true'
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -130,7 +112,6 @@ jobs:
           - Updated `REPO_BRANCH` in the following files:
             ${{ env.files_to_update }}
           - Updated `CONFIG_VERSION_REPO` in `.config`.
-          - Updated `VERSION` in `scripts/update-script.sh`.
 
           Labels: bump, immortalwrt, nightly, v${{ env.latest_version }}
         labels: bump, immortalwrt, nightly, v${{ env.latest_version }}
