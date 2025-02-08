@@ -115,4 +115,13 @@ fi
 
 log_info "Performing sysupgrade with the file $SYSUPGRADE_IMG..." 
 sleep 2
-sysupgrade "$SYSUPGRADE_IMG"
+
+SYSUPGRADE_OUTPUT=$(sysupgrade "$SYSUPGRADE_IMG" 2>&1)
+if echo "$SYSUPGRADE_OUTPUT" | grep -iq "closing"; then
+    log_success "Sysupgrade process initiated successfully."
+else
+    log_error "Sysupgrade failed or unexpected behavior detected:"
+    echo "$SYSUPGRADE_OUTPUT"
+    break
+fi
+log_success "Sysupgrade successfully installed. Device is rebooting..."
