@@ -71,6 +71,10 @@ If you find this project useful, consider giving it a star ⭐. It’s a great w
 [![Star History Chart](https://api.star-history.com/svg?repos=SuperKali/BananaWRT&type=Date)](https://star-history.com/#SuperKali/BananaWRT&Date)
 
 
+## 📊 Repository Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/be7f3efd58c41ba325eff1a5b101c8e40956ff2e.svg "Repobeats analytics image")
+
 ## 🔧 Contributions
 
 Contributions are welcome! Please open issues for bugs or feature requests and submit pull requests for code changes.
