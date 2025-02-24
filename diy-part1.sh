@@ -14,5 +14,5 @@
 # Uncomment a feed source
 #sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
 
-# Add a feed source
+# Add a feed source (Closed source)
 echo 'src-git additional_pack https://github.com/SuperKali/openwrt-packages' >> feeds.conf.default

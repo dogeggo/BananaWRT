@@ -15,6 +15,8 @@
 
 - Optimized support for **Banana Pi R3 Mini** hardware.
 - Compatibility with the **Fibocom FM350** modem.
+- LPAC integration for advanced eSIM management.
+- Optimized support of 4IceG addons like (luci-app-3ginfo, modemband, etc).
 - Automated builds using GitHub Actions.
 - Based on the stable and feature-rich **ImmortalWRT** distribution.
 
@@ -57,12 +59,12 @@ This repository uses self-hosted runners to enhance performance and control in C
 
 | Worker Name         | Architecture | CPU                | RAM   | Storage         | Network          | Location      |
 | ------------------  | ------------ | ------------------ | ----- | --------------- | ---------------- | ------------- |
-| **manu-server-01**  | x86\_64      | 32-vCore, 3.3 GHz  | 32 GB | 50 GB SSD       | 10 Gbps          | Italy         |
+| **manu-server-01**  | x86\_64      | 32-vCore, 3.6 GHz  | 32 GB | 50 GB SSD       | 10 Gbps          | Italy         |
 | **netcup-us-arm64** | ARM64        | 10-vCore, 3.0 GHz  | 16 GB | 512 GB NvME SSD | 2.5 Gbps         | United States |
 
-Each worker is optimized for specific CI/CD tasks and managed by the development team to ensure reliability and performance.
+Each worker is optimized for specific CI/CD tasks and is managed by the development team to ensure reliability and performance. If you’d like to contribute a new worker, please open an issue in this repository to discuss the details and integration process.
 
-If you want to contribute a new worker, please open an issue in this repository to discuss the details and integration process.
+A special thanks to the supporters who have donated a worker node, helping to strengthen the project.
 
 ## ⭐ Star History
 
@@ -70,6 +72,7 @@ If you find this project useful, consider giving it a star ⭐. It’s a great w
 
 [![Star History Chart](https://api.star-history.com/svg?repos=SuperKali/BananaWRT&type=Date)](https://star-history.com/#SuperKali/BananaWRT&Date)
 
+📌 Once the project reaches 200 stars ⭐, the customized packages will be released publicly. This does not mean the project is not fully open source; rather, it serves as a reminder of the immense effort behind it. Leaving a star is a simple way to show support for the maintainer. Those who wish to contribute financially can do so using the "Sponsor" button at the top.
 
 ## 📊 Repository Activity
 
