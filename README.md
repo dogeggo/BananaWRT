@@ -14,9 +14,9 @@
 ## Features
 
 - Optimized support for **Banana Pi R3 Mini** hardware.
-- Compatibility with the **Fibocom FM350** modem.
-- LPAC integration for advanced eSIM management.
-- Optimized support of 4IceG addons like (luci-app-3ginfo, modemband, etc).
+- Support for the **Fibocom FM350** modem using mrhaav add-ons, such as (luci-proto-atc, atc-fib-fm350_gl)
+- Custom LPAC add-on for advanced eSIM management (lpac).
+- Optimized support of 4IceG add-ons, such as (luci-app-3ginfo, modemband, etc).
 - Automated builds using GitHub Actions.
 - Based on the stable and feature-rich **ImmortalWRT** distribution.
 
