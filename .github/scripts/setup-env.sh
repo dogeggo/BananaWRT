@@ -28,7 +28,7 @@ python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squa
 subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd gh git jq"
 
 X86_64_PACKAGES="gcc-multilib g++-multilib libc6-dev-i386 lib32gcc-s1"
-AARCH64_PACKAGES="libc6-dev"
+AARCH64_PACKAGES="libc6-dev libdw-dev zlib1g-dev liblzma-dev libelf-dev libpfm4 libpfm4-dev libbabeltrace-dev libbabeltrace-ctf-dev libtool-bin"
 
 manage_packages() {
     local packages=$1
