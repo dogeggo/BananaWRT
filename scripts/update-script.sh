@@ -44,26 +44,54 @@ log_error() {
 }
 
 usage() {
-    echo "Usage: $0 [fota|ota] [--dry-run]"
+    echo "Usage: $0 [fota|ota] [--dry-run] [--reset]"
     exit 1
 }
 
-DRY_RUN=0
+version_greater() {
+    printf '%s\n%s\n' "$1" "$2" | sort -V | head -n 1 | grep -q "^$2$"
+}
 
-if [ "$#" -eq 0 ]; then
-    usage
-fi
-
-MODE="$1"
-
-if [ "$#" -eq 2 ]; then
-    if [ "$2" = "--dry-run" ]; then
-        DRY_RUN=1
-        log_info "Dry-run mode activated. No destructive operations will be executed."
+check_and_update_compat_version() {
+    REQUIRED_VERSION="$1"
+    CURRENT_VERSION=$(uci get system.@system[0].compat_version 2>/dev/null || echo "0.0")
+  
+    if version_greater "$REQUIRED_VERSION" "$CURRENT_VERSION"; then
+        log_info "Updating compat_version from $CURRENT_VERSION to $REQUIRED_VERSION..."
+        uci set system.@system[0].compat_version="$REQUIRED_VERSION"
+        uci commit system
+        log_success "compat_version updated to $REQUIRED_VERSION."
     else
-        usage
+        log_info "Current compat_version ($CURRENT_VERSION) is already compatible or greater."
     fi
-elif [ "$#" -gt 2 ]; then
+}
+
+MODE=""
+DRY_RUN=0
+RESET=0
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        fota|ota)
+            if [ -n "$MODE" ]; then
+                usage
+            fi
+            MODE="$1"
+            ;;
+        --dry-run)
+            DRY_RUN=1
+            ;;
+        --reset)
+            RESET=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+if [ -z "$MODE" ]; then
     usage
 fi
 
@@ -144,7 +172,7 @@ if [ "$MODE" = "fota" ]; then
         prefix="\033[1;36mDownloading $filename...\033[0m"
         asset_url=$(echo "$RELEASES_JSON" | jq -r ".[$index].assets[] | select(.name==\"$filename\") | .browser_download_url")
         [ -z "$asset_url" ] || [ "$asset_url" = "null" ] && { log_error "Asset $filename not found for release $RELEASE_TAG."; exit 1; }
-
+  
         if [ "$DRY_RUN" -eq 1 ]; then
             printf "%b\n" "$prefix"
             log_info "DRY-RUN: Simulated download of $filename from $asset_url"
@@ -247,13 +275,21 @@ if echo "$SYSUPGRADE_LOG" | grep -q "The device is supported, but the config is 
     fi
 fi
 
+if [ "$RESET" -eq 1 ]; then
+    log_info "Starting sysupgrade without preserving configuration..."
+    sysupgrade_cmd="sysupgrade -n"
+else
+    log_info "Starting sysupgrade with configuration preserved..."
+    sysupgrade_cmd="sysupgrade"
+fi
+
 log_info "Starting sysupgrade with file $SYSUPGRADE_IMG..."
 sleep 2
 if [ "$DRY_RUN" -eq 1 ]; then
     log_info "DRY-RUN: Simulated sysupgrade execution with $SYSUPGRADE_IMG."
     SYSUPGRADE_OUTPUT="Simulated sysupgrade - closing"
 else
-    SYSUPGRADE_OUTPUT=$(sysupgrade "$SYSUPGRADE_IMG" 2>&1)
+    SYSUPGRADE_OUTPUT=$($sysupgrade_cmd "$SYSUPGRADE_IMG" 2>&1)
 fi
 
 if echo "$SYSUPGRADE_OUTPUT" | grep -iq "closing"; then
