@@ -39,6 +39,14 @@ on:
         type: string
         required: true
         default: '24.10.0'
+      cleanup:
+        description: 'Do you want cleanup?'
+        required: true
+        type: choice
+        options:
+          - yes
+          - no
+        default: yes
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
@@ -213,7 +221,7 @@ jobs:
         keep_minimum_runs: 7
 
     - name: Cleanup Workspace
-      if: always()
+      if: ${{ github.event.inputs.cleanup }} == 'true'
       run: |
         sudo rm -rf ~/.netrc
         sudo rm -rf "${{ runner.workspace }}/immortalwrt"
