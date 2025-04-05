@@ -44,7 +44,7 @@ log_error() {
 }
 
 usage() {
-    echo "Usage: $0 [fota|ota] [--dry-run] [--reset]"
+    echo "Usage: $0 [fota|ota|packages] [--dry-run] [--reset]"
     exit 1
 }
 
@@ -72,7 +72,7 @@ RESET=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        fota|ota)
+        fota|ota|packages)
             if [ -n "$MODE" ]; then
                 usage
             fi
@@ -146,6 +146,114 @@ elif [ "$MODE" = "ota" ]; then
     echo -e "\033[1;35mOTA Mode:\033[0m Enter the Firmware Version of the files in /tmp (e.g., 24.10.0 or 24.10.0-rc4):"
     read -r FIRMWARE_VERSION
     [ -z "$FIRMWARE_VERSION" ] && { log_error "Firmware Version not specified. Cannot continue."; exit 1; }
+elif [ "$MODE" = "packages" ]; then
+    command -v curl >/dev/null 2>&1 || { log_error "curl is not installed. Cannot continue."; exit 1; }
+    command -v jq >/dev/null 2>&1 || { log_error "jq is not installed. Cannot continue."; exit 1; }
+    command -v opkg >/dev/null 2>&1 || { log_error "opkg is not installed. Cannot continue."; exit 1; }
+    
+    FIRMWARE_VERSION=$(grep -o "DISTRIB_RELEASE='.*'" /etc/openwrt_release | cut -d "'" -f 2)
+    [ -z "$FIRMWARE_VERSION" ] && { log_error "Unable to determine current firmware version."; exit 1; }
+    log_info "Current firmware version: $FIRMWARE_VERSION"
+    
+    REPO_URL="https://repo.superkali.me/releases/$FIRMWARE_VERSION/packages/additional_pack/index.json"
+    log_info "Fetching package index from $REPO_URL..."
+    tempfile=$(mktemp)
+    ( curl -s "$REPO_URL" > "$tempfile" ) &
+    curl_pid=$!
+    spinner_with_prefix $curl_pid "\033[1;33mFetching package index...\033[0m"
+    wait $curl_pid
+    
+    if [ ! -s "$tempfile" ]; then
+        log_error "Failed to download package index or file is empty."
+        rm -f "$tempfile"
+        exit 1
+    fi
+    
+    ARCH=$(jq -r '.architecture' "$tempfile")
+    [ -z "$ARCH" ] || [ "$ARCH" = "null" ] && { log_error "Architecture not found in package index."; rm -f "$tempfile"; exit 1; }
+    log_info "Package architecture: $ARCH"
+    
+    packages_update_list=$(mktemp)
+    
+    log_info "Checking packages for updates..."
+    
+    jq -r '.packages | to_entries[] | "\(.key)|\(.value)"' "$tempfile" > "$packages_update_list"
+    
+    updates_needed=0
+    updates_list=$(mktemp)
+    
+    while IFS='|' read -r pkg_name repo_version; do
+        if echo "$pkg_name" | grep -q "^luci-i18n-"; then
+            continue
+        fi
+        
+        local_version=$(opkg list-installed | grep "^$pkg_name - " | cut -d ' ' -f 3)
+        
+        if [ -z "$local_version" ]; then
+            echo -e " - \033[1;36m$pkg_name\033[0m: \033[1;33mNot installed\033[0m -> \033[1;32m$repo_version\033[0m" >> "$updates_list"
+            updates_needed=1
+        elif [ "$local_version" != "$repo_version" ]; then
+            echo -e " - \033[1;36m$pkg_name\033[0m: \033[1;33m$local_version\033[0m -> \033[1;32m$repo_version\033[0m" >> "$updates_list"
+            updates_needed=1
+        fi
+    done < "$packages_update_list"
+    
+    if [ "$updates_needed" -eq 1 ]; then
+        echo -e "\033[1;35mPackages available for update:\033[0m"
+        cat "$updates_list"
+        echo ""
+        echo -e "\033[1;35mDo you want to proceed with updating these packages? (y/n):\033[0m"
+        read -r proceed
+        
+        if [ "$proceed" != "y" ] && [ "$proceed" != "Y" ]; then
+            log_info "Update cancelled."
+            rm -f "$tempfile" "$packages_update_list" "$updates_list"
+            exit 0
+        fi
+        
+        REPO_CONF="/etc/opkg/customfeeds.conf"
+        REPO_LINE="src/gz additional_pack https://repo.superkali.me/releases/$FIRMWARE_VERSION/packages/additional_pack"
+        
+        if ! grep -q "$REPO_LINE" "$REPO_CONF" 2>/dev/null; then
+            log_info "Adding custom repository..."
+            if [ "$DRY_RUN" -eq 1 ]; then
+                log_info "DRY-RUN: Would add repository: $REPO_LINE"
+            else
+                echo "$REPO_LINE" >> "$REPO_CONF"
+            fi
+        fi
+        
+        log_info "Updating package lists..."
+        if [ "$DRY_RUN" -eq 1 ]; then
+            log_info "DRY-RUN: Would run 'opkg update'"
+        else
+            opkg update
+        fi
+        
+        while IFS='|' read -r pkg_name repo_version; do
+            if echo "$pkg_name" | grep -q "^luci-i18n-"; then
+                continue
+            fi
+            
+            local_version=$(opkg list-installed | grep "^$pkg_name - " | cut -d ' ' -f 3)
+            
+            if [ -z "$local_version" ] || [ "$local_version" != "$repo_version" ]; then
+                log_info "Installing/upgrading $pkg_name ($repo_version)..."
+                if [ "$DRY_RUN" -eq 1 ]; then
+                    log_info "DRY-RUN: Would run 'opkg install $pkg_name'"
+                else
+                    opkg install "$pkg_name"
+                fi
+            fi
+        done < "$packages_update_list"
+        
+        log_success "Package updates completed."
+    else
+        log_success "All packages are up to date."
+    fi
+    
+    rm -f "$tempfile" "$packages_update_list" "$updates_list"
+    exit 0
 fi
 
 EMMC_PRELOADER="/tmp/immortalwrt-${FIRMWARE_VERSION}-mediatek-filogic-bananapi_bpi-r3-mini-emmc-preloader.bin"
@@ -172,7 +280,7 @@ if [ "$MODE" = "fota" ]; then
         prefix="\033[1;36mDownloading $filename...\033[0m"
         asset_url=$(echo "$RELEASES_JSON" | jq -r ".[$index].assets[] | select(.name==\"$filename\") | .browser_download_url")
         [ -z "$asset_url" ] || [ "$asset_url" = "null" ] && { log_error "Asset $filename not found for release $RELEASE_TAG."; exit 1; }
-  
+
         if [ "$DRY_RUN" -eq 1 ]; then
             printf "%b\n" "$prefix"
             log_info "DRY-RUN: Simulated download of $filename from $asset_url"
