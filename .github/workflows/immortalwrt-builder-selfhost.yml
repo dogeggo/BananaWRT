@@ -31,9 +31,9 @@ on:
         required: true
         type: choice
         options:
-          - x64
-          - arm64
-        default: x64 
+          - X64
+          - ARM64
+        default: X64 
       version_system:
         description: 'Write the version of ImmortalWRT to use'
         type: string
