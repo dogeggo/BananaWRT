@@ -388,7 +388,7 @@ if [ "$RESET" -eq 1 ]; then
     sysupgrade_cmd="sysupgrade -n"
 else
     log_info "Starting sysupgrade with configuration preserved..."
-    sysupgrade_cmd="sysupgrade"
+    sysupgrade_cmd="sysupgrade -k"
 fi
 
 log_info "Starting sysupgrade with file $SYSUPGRADE_IMG..."
