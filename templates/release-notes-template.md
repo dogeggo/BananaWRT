@@ -23,3 +23,5 @@
 💬 **[Support Forum](https://github.com/SuperKali/BananaWRT/discussions)**  
 ➡️ Join the community discussion, ask questions, and get support.
 
+📄 **[View Full Changelog](https://github.com/SuperKali/BananaWRT/blob/main/CHANGELOG.md)**  
+➡️ Read the complete list of updates and improvements in this release.
