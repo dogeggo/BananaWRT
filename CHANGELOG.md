@@ -37,5 +37,5 @@ All notable changes to **BananaWRT** will be documented in this file.
 
 
 ---
-🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/BananaWRT)  
+🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/SuperKali/BananaWRT)  
 📅 Release date: **April 7, 2025**
