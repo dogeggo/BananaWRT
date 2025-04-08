@@ -1,0 +1,154 @@
+name: BananaWRT Bug Report
+description: Report a bug to help us improve BananaWRT
+labels:
+  - bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: >
+        Provide a clear, concise summary of the issue you're encountering.
+        Include any error messages or symptoms that make this a bug.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: BananaWRT Version
+      description: >
+        Specify the BananaWRT version or commit hash (if known).
+        To find your version, run the following command on your device:
+        ```
+        . /etc/openwrt_release && echo $DISTRIB_REVISION
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: release
+    attributes:
+      label: BananaWRT Release
+      description: >
+        Specify the BananaWRT release (e.g., "22.xx" or "master") you're using.
+        You can confirm this by running:
+        ```
+        . /etc/openwrt_release && echo $DISTRIB_RELEASE
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: target
+    attributes:
+      label: BananaWRT Target/Subtarget
+      description: >
+        Provide the target/subtarget, such as "ramips/mt76x8".
+        You can get this from:
+        ```
+        . /etc/openwrt_release && echo $DISTRIB_TARGET
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device/Hardware Model
+      description: >
+        The specific hardware model (e.g., "Banana Pi R2").
+        If unsure, you can run:
+        ```
+        cat /tmp/sysinfo/model
+        ```
+    validations:
+      required: true
+
+  - type: dropdown
+    id: image_kind
+    attributes:
+      label: Image Kind
+      description: >
+        Did you use an official BananaWRT image, or build it yourself?
+      options:
+        - Official downloaded image
+        - Self-built image
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: >
+        List the steps needed to trigger the bug. Please be as specific as possible so we can replicate it.
+        Example:
+        1. Go to Network → Interfaces
+        2. Configure WAN and save
+        3. Observe the error
+      placeholder: |
+        1.
+        2.
+        3.
+
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Actual Behaviour
+      description: >
+        Describe the outcome you observed after following the steps to reproduce.
+        Include any error messages, logs, or unusual behaviors here.
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behaviour
+      description: >
+        What did you expect to happen instead? 
+        (e.g., "The WAN interface should obtain an IP address automatically.")
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs / System Outputs
+      description: >
+        Paste any logs, system outputs, or relevant console messages that help illustrate the issue.
+        You might want to include `logread` and `dmesg` outputs:
+        ```
+        logread
+        dmesg
+        ```
+      render: text
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Info
+      description: >
+        Provide any other details that might be useful.
+        For example:
+         • Network topology or custom configuration
+         • Modifications to default files
+         • Previous BananaWRT versions where the issue didn’t occur
+
+  - type: textarea
+    id: diffconfig
+    attributes:
+      label: diffconfig (if self-built)
+      description: >
+        If you built the firmware yourself, please attach the output of:
+        ```
+        ./scripts/diffconfig.sh
+        ```
+      render: text
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      description: >
+        By submitting this issue, you confirm:
+      options:
+        - label: "I am reporting an issue with BananaWRT (not an unsupported fork)."
+          required: true
