@@ -25,17 +25,18 @@
 ## Hardware Specifications
 
 ### Banana Pi R3 Mini
-| Specification                | Details                                     |
-|------------------------------|---------------------------------------------|
-| **CPU**                      | MediaTek MT7986B (quad-core ARM Cortex-A53) |
-| **RAM**                      | 2GB DDR4                                    |
-| **Storage**                  | 8GB eMMC, microSD slot, USB support         |
-| **Networking**               | 2x 2.5GbE Ethernet ports                    |
-| **Wi-Fi**                    | Dual-band Wi-Fi 6 (802.11ax)                |
-| **Hardware Acceleration**    | Offloading for Wi-Fi and NAT                |
-| **Expansion**                | 1x PCIe slot                                |
-| **Power**                    | 12V/2A DC input                             |
-
+| Specification               | Details                                                                                 |
+|-----------------------------|-----------------------------------------------------------------------------------------|
+| **CPU**                     | MediaTek MT7986A (Filogic 830) Quad-core ARM Cortex-A53 up to 2GHz                      |
+| **RAM**                     | 2GB DDR4                                                                                |
+| **Storage**                 | 8GB eMMC flash, 128MB SPI NAND flash; supports M.2 NVMe SSD via M.2 Key-M slot          |
+| **Networking**              | 2x 2.5GbE Ethernet ports via Airoha EN8811H controllers                                 |
+| **Wi-Fi**                   | Dual-band Wi-Fi 6 (2.4GHz: 574Mbps, 5GHz: 2402Mbps) via MediaTek MT7976C                |
+| **Expansion Slots**         | 1x M.2 Key-B (USB 3.0) for 5G NR module, 1x M.2 Key-M (PCIe 2.0 x2) for NVMe SSD        |
+| **USB Ports**               | 1x USB 2.0 Type-A                                                                       |
+| **SIM Support**             | 1x Nano SIM slot                                                                        |
+| **Power Supply**            | 12V/1.67A DC input via USB Type-C PD                                                    |
+ 
 ### Fibocom FM350
 
 | Specification                | Details                                       |
