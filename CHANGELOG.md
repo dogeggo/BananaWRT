@@ -4,6 +4,23 @@ All notable changes to **BananaWRT** will be documented in this file.
 
 ---
 
+## [2025-04-09]
+
+### 🧩 Additional Packages
+
+- 🐛 `luci-app-fan`: fix permission on install by @SuperKali  
+- 🛠️ `luci-app-fan`: temporary removed "Do not monitor modem" from cbi by @SuperKali  
+- 🚀 `luci-app-fan`: first release – includes backend control script and LuCI interface by @SuperKali  
+
+### 🍌 BananaWRT Core
+
+- 🌬️ Add first support to a brand new fan control interface by @SuperKali  
+- 🐞 issue_templates: add bug report template, ispired from immortalwrt by @SuperKali  
+- 📜 Added CODE_OF_CONDUCT.md by @SuperKali  
+- 🔗 CHANGELOG: fix wrong link BananaWRT section by @SuperKali  
+- 📄 release-template: added redirect link to changelog by @SuperKali  
+- ♻️ Align script from banana-utils by @SuperKali  
+
 ## [2025-04-07]
 
 ### 🧩 Additional Packages
@@ -35,7 +52,7 @@ All notable changes to **BananaWRT** will be documented in this file.
 - 🛠️ Fixed missing functions in update script and added `--reset` flag to restore full configuration by @SuperKali  
 - 📢 Added more detailed explanations in feature section by @SuperKali  
 
-
 ---
+
 🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/SuperKali/BananaWRT)  
-📅 Release date: **April 7, 2025**
+📅 Release date: **April 9, 2025**
