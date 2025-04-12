@@ -4,22 +4,40 @@ All notable changes to **BananaWRT** will be documented in this file.
 
 ---
 
+## [2025-04-12]
+
+### 🧩 Additional Packages
+
+- 🔼 `luci-app-fan`: bump version to **v1.0.11** & improve time range button layout on mobile by @SuperKali  
+- 🔼 `luci-app-fan`: bump version to **v1.0.10** by @SuperKali  
+- 🔼 `luci-app-fan`: bump version to **v1.0.9** by @SuperKali  
+- 📊 `luci-app-fan`: add temperature history chart by @SuperKali  
+- 🫥 `luci-app-fan`: hide average temperature when modem is not monitored by @SuperKali  
+- 🔼 `luci-app-fan`: bump version to **v1.0.8** by @SuperKali  
+- ⚙️ `luci-app-fan`: add option to disable modem temperature monitoring by @SuperKali  
+- 🔧 `banana-utils` & `linkup-optimization`: bump versioning, moved hostname logic to `banana-utils` and changed hostname from **LinkUP** to **BananaWRT** by @SuperKali  
+- 📝 README: added `luci-app-fan` to packages list by @SuperKali  
+
+---
+
 ## [2025-04-09]
 
 ### 🧩 Additional Packages
 
 - 🐛 `luci-app-fan`: fix permission on install by @SuperKali  
-- 🛠️ `luci-app-fan`: temporary removed "Do not monitor modem" from cbi by @SuperKali  
+- 🛠️ `luci-app-fan`: temporarily removed "Do not monitor modem" from CBI by @SuperKali  
 - 🚀 `luci-app-fan`: first release – includes backend control script and LuCI interface by @SuperKali  
 
 ### 🍌 BananaWRT Core
 
 - 🌬️ Add first support to a brand new fan control interface by @SuperKali  
-- 🐞 issue_templates: add bug report template, ispired from immortalwrt by @SuperKali  
+- 🐞 issue_templates: add bug report template, inspired from ImmortalWRT by @SuperKali  
 - 📜 Added CODE_OF_CONDUCT.md by @SuperKali  
-- 🔗 CHANGELOG: fix wrong link BananaWRT section by @SuperKali  
+- 🔗 CHANGELOG: fix wrong link in BananaWRT section by @SuperKali  
 - 📄 release-template: added redirect link to changelog by @SuperKali  
 - ♻️ Align script from banana-utils by @SuperKali  
+
+---
 
 ## [2025-04-07]
 
@@ -55,4 +73,4 @@ All notable changes to **BananaWRT** will be documented in this file.
 ---
 
 🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/SuperKali/BananaWRT)  
-📅 Release date: **April 9, 2025**
+📅 Release date: **April 12, 2025**
