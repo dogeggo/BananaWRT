@@ -4,6 +4,18 @@ All notable changes to **BananaWRT** will be documented in this file.
 
 ---
 
+## [2025-04-16]
+
+### 🧩 Additional Packages
+
+- 🛠️ `banana-utils`: optimizing `banana-restore` process by @SuperKali  
+- ⚠️ `luci-app-fan`: updated *warn* and *crit* values of notifications by @SuperKali  
+- 🌐 `luci-app-fan`: remove invalid translation by @SuperKali  
+- 🎨 `luci-app-fan`: improve UI and notifications by @SuperKali  
+- 🔼 Bump versioning of `linkup-optimization` and `luci-app-sms-tool`; fix default `tty` port for sending AT commands and SMS by @SuperKali  
+
+---
+
 ## [2025-04-12]
 
 ### 🧩 Additional Packages
@@ -73,4 +85,4 @@ All notable changes to **BananaWRT** will be documented in this file.
 ---
 
 🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/SuperKali/BananaWRT)  
-📅 Release date: **April 12, 2025**
+📅 Release date: **April 16, 2025**
