@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: SuperKali/openwrt-packages
-        path: .tmp/
+        path: .tmp/openwrt-packages
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         fetch-depth: 0
 
