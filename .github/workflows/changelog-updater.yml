@@ -26,6 +26,7 @@ jobs:
         path: ${{ runner.workspace }}/openwrt-packages
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         fetch-depth: 0
+        set-safe-directory: false
 
     - name: Set up Python
       uses: actions/setup-python@v4
