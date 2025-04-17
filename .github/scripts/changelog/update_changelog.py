@@ -10,6 +10,8 @@ import emoji
 RELEASE_DATE = os.environ.get('RELEASE_DATE', datetime.now().strftime('%Y-%m-%d'))
 MAIN_REPO_PATH = os.getcwd()
 PACKAGES_REPO_PATH = os.environ.get('PACKAGES_REPO_PATH')
+DAYS_BACK = os.environ.get('DAYS_BACK')
+
 if not PACKAGES_REPO_PATH:
     print("Error: PACKAGES_REPO_PATH not set")
     sys.exit(1)
@@ -75,6 +77,14 @@ CATEGORIES = {
 }
 
 def get_last_changelog_date():
+    if DAYS_BACK:
+        try:
+            days = int(DAYS_BACK)
+            print(f"Using manual input: looking back {days} days")
+            return datetime.now() - timedelta(days=days)
+        except ValueError:
+            print(f"Warning: Invalid DAYS_BACK value: {DAYS_BACK}. Using default method.")
+    
     try:
         with open(CHANGELOG_PATH, 'r') as f:
             content = f.read()
