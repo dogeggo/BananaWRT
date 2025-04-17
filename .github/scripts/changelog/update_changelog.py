@@ -9,7 +9,10 @@ import emoji
 
 RELEASE_DATE = os.environ.get('RELEASE_DATE', datetime.now().strftime('%Y-%m-%d'))
 MAIN_REPO_PATH = os.getcwd()
-PACKAGES_REPO_PATH = os.path.join(MAIN_REPO_PATH, 'openwrt-packages')
+PACKAGES_REPO_PATH = os.environ.get('PACKAGES_REPO_PATH')
+if not PACKAGES_REPO_PATH:
+    print("Error: PACKAGES_REPO_PATH not set")
+    sys.exit(1)
 CHANGELOG_PATH = os.path.join(MAIN_REPO_PATH, 'CHANGELOG.md')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 
@@ -156,40 +159,62 @@ def get_commit_files(repo, commit_sha):
         return []
 
 def get_recent_commits(repo_path, since_date=None):
-    repo = git.Repo(repo_path)
-    
-    if since_date is None:
-        since_date = get_last_changelog_date()
-    
-    since_date_str = since_date.strftime('%Y-%m-%d')
-    print(f"Getting commits since {since_date_str}")
-    
-    commits = []
-    for commit in repo.iter_commits(since=since_date_str):
-        commit_date = datetime.fromtimestamp(commit.committed_date)
-        author = commit.author.name
-        if author == "GitHub Actions":
-            author = "SuperKali"
+    try:
+        repo = git.Repo(repo_path)
         
-        files_changed = get_commit_files(repo, commit.hexsha)
+        if since_date is None:
+            since_date = get_last_changelog_date()
         
-        if len(commit.parents) > 1 or "Merge" in commit.message or "workflow" in commit.message.lower():
-            continue
+        since_date_str = since_date.strftime('%Y-%m-%d')
+        print(f"Getting commits since {since_date_str} from {repo_path}")
+        
+        commits = []
+        for commit in repo.iter_commits(since=since_date_str):
+            commit_date = datetime.fromtimestamp(commit.committed_date)
+            author = commit.author.name
+            if author == "GitHub Actions":
+                author = "SuperKali"
             
-        if any(skip in commit.message.lower() for skip in ["typo", "readme", "whitespace", "spacing", "indent"]):
-            continue
+            files_changed = get_commit_files(repo, commit.hexsha)
             
-        commits.append({
-            'sha': commit.hexsha,
-            'message': commit.message,
-            'author': author,
-            'date': commit_date,
-            'files': files_changed,
-            'formatted': format_commit_message(commit, author),
-            'category': categorize_commit(commit.message, files_changed)
-        })
+            if len(commit.parents) > 1 or "Merge" in commit.message or "workflow" in commit.message.lower():
+                continue
+                
+            if any(skip in commit.message.lower() for skip in ["typo", "readme", "whitespace", "spacing", "indent"]):
+                continue
+                
+            commits.append({
+                'sha': commit.hexsha,
+                'message': commit.message,
+                'author': author,
+                'date': commit_date,
+                'files': files_changed,
+                'formatted': format_commit_message(commit, author),
+                'category': categorize_commit(commit.message, files_changed)
+            })
+        
+        return commits
+    except Exception as e:
+        print(f"Error getting commits from {repo_path}: {e}")
+        return []
+
+def update_release_date(content, release_date):
+    date_obj = datetime.strptime(release_date, '%Y-%m-%d')
+    formatted_date = date_obj.strftime('%B %d, %Y')
     
-    return commits
+    date_pattern = r'📅 Release date: \*\*.*\*\*'
+    new_date_line = f'📅 Release date: **{formatted_date}**'
+    
+    if re.search(date_pattern, content):
+        return re.sub(date_pattern, new_date_line, content)
+    else:
+        lines = content.split('\n')
+        if len(lines) > 1:
+            lines[-1] = new_date_line
+            lines.append('')
+            return '\n'.join(lines)
+        else:
+            return content + f'\n\n{new_date_line}'
 
 def update_changelog():
     print(f"Updating changelog for release date: {RELEASE_DATE}")
@@ -197,9 +222,22 @@ def update_changelog():
     last_date = get_last_changelog_date()
     print(f"Found last changelog date: {last_date.strftime('%Y-%m-%d')}")
     
-    main_commits = get_recent_commits(MAIN_REPO_PATH, last_date)
-    packages_commits = get_recent_commits(PACKAGES_REPO_PATH, last_date)
+    if not os.path.isdir(PACKAGES_REPO_PATH) or not os.path.isdir(os.path.join(PACKAGES_REPO_PATH, '.git')):
+        print(f"Warning: External repository not found at {PACKAGES_REPO_PATH}. Skipping external commits.")
+        main_commits = get_recent_commits(MAIN_REPO_PATH, last_date)
+        packages_commits = []
+    else:
+        main_commits = get_recent_commits(MAIN_REPO_PATH, last_date)
+        packages_commits = get_recent_commits(PACKAGES_REPO_PATH, last_date)
+    
+    print(f"Found {len(main_commits)} commits in main repository")
+    print(f"Found {len(packages_commits)} commits in packages repository")
+    
     all_commits = main_commits + packages_commits
+    
+    if not all_commits:
+        print("No new commits found since last changelog update. Exiting.")
+        return
     
     categorized_commits = {}
     for category in CATEGORIES:
@@ -286,6 +324,8 @@ def update_changelog():
                 content = content[:title_end+2] + '---\n\n' + '\n'.join(new_entry) + content[title_end+2:]
             else:
                 content = '\n'.join(new_entry) + content
+    
+    content = update_release_date(content, RELEASE_DATE)
     
     with open(CHANGELOG_PATH, 'w') as f:
         f.write(content)
