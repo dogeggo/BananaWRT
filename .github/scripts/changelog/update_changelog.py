@@ -124,7 +124,9 @@ def format_commit_message(commit, author):
     
     emoji_code = get_emoji_for_commit(message)
     
-    message = re.sub(r'^[\s\u200d]*[\p{Emoji_Presentation}\p{Extended_Pictographic}][\s\u200d]*', '', message, flags=re.UNICODE)
+    found_emojis = emoji.emoji_list(message)
+    if found_emojis and found_emojis[0]['match_start'] == 0:
+        message = message[found_emojis[0]['match_end']:].strip()
     
     message = re.sub(r'^(package|luci-app-\w+|banana-utils|linkup-optimization|modemband):\s*', '', message, flags=re.IGNORECASE)
     
