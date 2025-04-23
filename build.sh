@@ -10,7 +10,7 @@ subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zst
 gcc-multilib g++-multilib libc6-dev-i386 lib32gcc-s1 \
 libc6-dev libdw-dev zlib1g-dev liblzma-dev libelf-dev libpfm4 libpfm4-dev libbabeltrace-dev libbabeltrace-ctf-dev libtool-bin"
 apt update
-apt install -y INSTALL_PACKAGES
+apt install -y "$INSTALL_PACKAGES"
 export FORCE_UNSAFE_CONFIGURE=1
 git clone https://github.com/immortalwrt/immortalwrt -b v24.10.1 immortalwrt
 cp -r dts/nightly/* immortalwrt/target/linux/mediatek/dts/
