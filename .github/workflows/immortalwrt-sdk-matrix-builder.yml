@@ -270,4 +270,5 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ftp-upload/bananawrt/sdk/
         server-dir: /bananawrt/sdk/
+        dangerous-clean-slate: false
         log-level: minimal
