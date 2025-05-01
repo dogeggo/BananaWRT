@@ -1,13 +1,13 @@
 #
 # File: .github/workflows/immortalwrt-sdk-matrix-builder.yml
-# Description: Build ImmortalWRT SDK in matrix configuration
+# Description: Build BananaWRT SDK in matrix configuration
 #
 # Copyright (c) 2024-2025 SuperKali <hello@superkali.me>
 #
 # This is free software, licensed under the MIT License.
 # See /LICENSE for more information.
 
-name: ImmortalWRT SDK Matrix Builder
+name: BananaWRT SDK Matrix Builder
 
 on:
   repository_dispatch:
