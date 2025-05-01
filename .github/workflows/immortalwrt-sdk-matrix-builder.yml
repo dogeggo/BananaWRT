@@ -126,7 +126,6 @@ jobs:
           -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"${{ matrix.version }}"'"|g' \
           .config
 
-
     - name: Download Required Packages
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
@@ -142,7 +141,6 @@ jobs:
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
     - name: Prepare SDK Files for Upload
-      if: env.UPLOAD_SDK == 'true'
       run: |
         SDK_PATH=$(find ${{ runner.workspace }}/immortalwrt/bin/targets -name "*sdk*" -type f | grep -v sha256sum | head -n 1)
         CONFIG_PATH=$(find ${{ runner.workspace }}/immortalwrt/bin/targets -name "config.buildinfo" | head -n 1)
@@ -158,12 +156,12 @@ jobs:
         
         TARGET=$(echo "$SDK_FILENAME" | sed -n 's/immortalwrt-sdk-.*-\(.*\)_gcc.*/\1/p')
         
-        mkdir -p ${{ runner.workspace }}/ftp-upload/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}
+        mkdir -p ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}
         
-        cp "$SDK_PATH" ${{ runner.workspace }}/ftp-upload/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/
-        cp "$CONFIG_PATH" ${{ runner.workspace }}/ftp-upload/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/ || true
+        cp "$SDK_PATH" ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/
+        cp "$CONFIG_PATH" ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/ || true
         
-        cat > ${{ runner.workspace }}/ftp-upload/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/sdk-info.json << EOF
+        cat > ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/sdk-info.json << EOF
         {
           "version": "${{ matrix.version }}",
           "architecture": "${{ matrix.arch }}",
@@ -175,20 +173,13 @@ jobs:
           "download_url": "https://repo.superkali.me/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/$SDK_FILENAME"
         }
         EOF
-        
-        echo "FTP_UPLOAD_DIR=${{ runner.workspace }}/ftp-upload" >> $GITHUB_ENV
-        echo "Files prepared for FTP upload"
 
-    - name: Upload Files to FTP
-      if: env.UPLOAD_SDK == 'true'
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+    - name: Upload SDK Artifacts
+      uses: actions/upload-artifact@v4
       with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ${{ env.FTP_UPLOAD_DIR }}/
-        server-dir: /
-        log-level: minimal
+        name: sdk-${{ matrix.arch }}-${{ matrix.version }}
+        path: ${{ runner.workspace }}/sdk-artifacts
+        retention-days: 1
 
     - name: Cleanup Workspace
       if: always()
@@ -197,25 +188,35 @@ jobs:
         if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
             sudo rm -rf "${{ runner.workspace }}/immortalwrt"
         fi
-
-        if [ -d "${{ env.FTP_UPLOAD_DIR }}" ]; then
-            sudo rm -rf "${{ env.FTP_UPLOAD_DIR }}"
+        if [ -d "${{ runner.workspace }}/sdk-artifacts" ]; then
+            sudo rm -rf "${{ runner.workspace }}/sdk-artifacts"
         fi
 
-  create-master-index:
+  upload-to-ftp:
     needs: [prepare, build-sdk]
     runs-on: ubuntu-latest
     
     steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-artifacts
+    
     - name: Create Master Index
       run: |
-        mkdir -p indexes/bananawrt/sdk
+        mkdir -p ftp-upload
+        
+        for artifact_dir in all-artifacts/sdk-*; do
+          cp -r $artifact_dir/* ftp-upload/
+        done
         
         VERSIONS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.version | join(" ")')
         ARCHS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.arch | join(" ")')
         BASE_URL="https://repo.superkali.me/bananawrt/sdk"
         
-        cat > indexes/bananawrt/sdk/sdk-master-index.json << EOF
+        mkdir -p ftp-upload/bananawrt/sdk
+        
+        cat > ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
         {
           "versions": {
         EOF
@@ -225,10 +226,10 @@ jobs:
           if [ "$first_version" = true ]; then
             first_version=false
           else
-            echo "," >> indexes/bananawrt/sdk/sdk-master-index.json
+            echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
           fi
           
-          cat >> indexes/bananawrt/sdk/sdk-master-index.json << EOF
+          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
             "$VERSION": {
               "architectures": {
         EOF
@@ -238,10 +239,10 @@ jobs:
             if [ "$first_arch" = true ]; then
               first_arch=false
             else
-              echo "," >> indexes/bananawrt/sdk/sdk-master-index.json
+              echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
             fi
             
-            cat >> indexes/bananawrt/sdk/sdk-master-index.json << EOF
+            cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
                 "$ARCH": {
                   "sdk_url": "$BASE_URL/$ARCH/$VERSION/",
                   "config_url": "$BASE_URL/$ARCH/$VERSION/config.buildinfo",
@@ -250,23 +251,23 @@ jobs:
         EOF
           done
           
-          cat >> indexes/bananawrt/sdk/sdk-master-index.json << EOF
+          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
               }
             }
         EOF
         done
         
-        cat >> indexes/bananawrt/sdk/sdk-master-index.json << EOF
+        cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
           }
         }
         EOF
 
-    - name: Upload Master Index to FTP
+    - name: Upload All Files to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: indexes/
-        server-dir: /
+        local-dir: ftp-upload/bananawrt/sdk/
+        server-dir: /bananawrt/sdk/
         log-level: minimal
