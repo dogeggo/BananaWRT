@@ -26,14 +26,6 @@ on:
         description: 'ImmortalWRT versions (comma-separated)'
         required: true
         default: '24.10.1'
-      cleanup:
-        description: 'Do you want cleanup?'
-        required: true
-        type: choice
-        options:
-          - yes
-          - no
-        default: yes
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
@@ -186,11 +178,15 @@ jobs:
         log-level: minimal
 
     - name: Cleanup Workspace
-      if: ${{ github.event.inputs.cleanup == 'yes' }}
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
-        sudo rm -rf "${{ env.FTP_UPLOAD_DIR }}"
+        if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
+            sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        fi
+
+        if [ -d "${{ env.FTP_UPLOAD_DIR }}" ]; then
+            sudo rm -rf "${{ env.FTP_UPLOAD_DIR }}"
+        fi
 
   create-master-index:
     needs: [prepare, build-sdk]
