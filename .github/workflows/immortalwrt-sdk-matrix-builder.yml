@@ -178,6 +178,7 @@ jobs:
         log-level: minimal
 
     - name: Cleanup Workspace
+      if: always()
       run: |
         sudo rm -rf ~/.netrc
         if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
