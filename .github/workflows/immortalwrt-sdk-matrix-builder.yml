@@ -108,12 +108,24 @@ jobs:
 
     - name: Apply Custom Configuration
       run: |
+        [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
         [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
         chmod +x ${{ env.DIY_P2_SH }}
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
-        
-        make defconfig
+        ./scripts/feeds install -p additional_pack -a
+
+    - name: Diffconfig with current configuration
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        ./scripts/diffconfig.sh > diffconfig
+        curl https://downloads.immortalwrt.org/releases/${{ matrix.version }}/targets/mediatek/filogic/config.buildinfo
+        cat diffconfig >> config.buildinfo
+        mv config.buildinfo .config
+        [ -n "$REPO_BRANCH" ] && sed -i \
+          -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"${{ matrix.version }}"'"|g' \
+          .config
+
 
     - name: Download Required Packages
       working-directory: ${{ runner.workspace }}/immortalwrt
