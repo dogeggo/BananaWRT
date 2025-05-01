@@ -133,7 +133,7 @@ jobs:
     - name: Build SDK
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-        make -j$(nproc) sdk || make -j1 V=s sdk
+        make -j$(nproc) || make -j1 V=s
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
     - name: Prepare SDK Files for Upload
