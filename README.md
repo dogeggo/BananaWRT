@@ -15,6 +15,7 @@
 
 - Optimized support for **Banana Pi R3 Mini** hardware.
 - Support for the **Fibocom FM350** modem using mrhaav add-ons, such as (luci-proto-atc, atc-fib-fm350_gl)
+- Automatic **APN** detection for quick and seamless configuration (atc-apn-database)
 - Custom LPAC add-on for advanced eSIM management (lpac).
 - Optimized support of 4IceG add-ons, such as (luci-app-3ginfo, modemband, etc).
 - Automated builds using GitHub Actions.
