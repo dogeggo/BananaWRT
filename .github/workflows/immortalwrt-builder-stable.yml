@@ -50,8 +50,7 @@ jobs:
     - name: Set Release data
       run: |
         echo "RELEASE_TAG=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
-        echo "Generated Release Tag: ${{ env.RELEASE_TAG }}"
-
+        
     - name: Authenticate GitHub
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
