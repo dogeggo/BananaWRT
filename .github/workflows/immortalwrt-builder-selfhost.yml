@@ -53,8 +53,8 @@ env:
   REPO_BRANCH: ${{ github.event.inputs.version_system }}
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: config/${{ github.event.inputs.release_type }}/.config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part2.sh
+  REPO_SCRIPT: scripts/builder/custom-repository.sh
+  STOCK_PACKAGES: scripts/builder/remove-stock-packages.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_PACKAGE_DIR: true
   UPLOAD_FIRMWARE: true
@@ -95,9 +95,9 @@ jobs:
     - name: Apply Custom Feeds Configuration
       run: |
         [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/immortalwrt/feeds.conf.default
-        chmod +x ${{ env.DIY_P1_SH }}
+        chmod +x ${{ env.REPO_SCRIPT }}
         cd ${{ runner.workspace }}/immortalwrt
-        $GITHUB_WORKSPACE/${{ env.DIY_P1_SH }}
+        $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
 
     - name: Add Custom DTS Files
       run: |
@@ -113,9 +113,9 @@ jobs:
       run: |
         [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
         [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
-        chmod +x ${{ env.DIY_P2_SH }}
+        chmod +x ${{ env.STOCK_PACKAGES }}
         cd ${{ runner.workspace }}/immortalwrt
-        $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
+        $GITHUB_WORKSPACE/${{ env.STOCK_PACKAGES }}
         ./scripts/feeds install -p additional_pack -a
 
     - name: Diffconfig with current configuration
