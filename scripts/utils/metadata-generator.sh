@@ -12,7 +12,7 @@
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
-source "$SCRIPT_DIR/functions/formatter.sh"
+source "$SCRIPT_DIR/.github/scrips/functions/formatter.sh"
 
 # Check if RELEASE_DATE is set
 if [ -z "$RELEASE_DATE" ]; then
