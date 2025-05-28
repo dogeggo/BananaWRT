@@ -28,12 +28,12 @@ RELEASE_TYPE="${BANANAWRT_RELEASE:-stable}"
 
 # Create the BananaWRT release file
 cat > package/base-files/files/etc/bananawrt_release << EOF
-    # BananaWRT Release Information
-    BANANAWRT_BUILD_DATE='${BUILD_DATE}'
-    BANANAWRT_COMMIT='${GITHUB_SHA}'
-    BANANAWRT_COMMIT_SHORT='${SHORT_SHA}'
-    BANANAWRT_BRANCH='${BRANCH}'
-    BANANAWRT_TYPE='${RELEASE_TYPE}'
+# BananaWRT Release Information
+BANANAWRT_BUILD_DATE='${BUILD_DATE}'
+BANANAWRT_COMMIT='${GITHUB_SHA}'
+BANANAWRT_COMMIT_SHORT='${SHORT_SHA}'
+BANANAWRT_BRANCH='${BRANCH}'
+BANANAWRT_TYPE='${RELEASE_TYPE}'
 EOF
 
 section "BananaWRT metadata injected successfully!"
