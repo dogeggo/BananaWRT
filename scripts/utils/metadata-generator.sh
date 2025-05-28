@@ -10,9 +10,7 @@
 # See /LICENSE for more information.
 #
 
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-
-source "$SCRIPT_DIR/.github/scrips/functions/formatter.sh"
+source "$GITHUB_WORKSPACE/.github/scripts/functions/formatter.sh"
 
 # Check if RELEASE_DATE is set
 if [ -z "$RELEASE_DATE" ]; then
