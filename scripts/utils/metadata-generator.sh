@@ -10,6 +10,10 @@
 # See /LICENSE for more information.
 #
 
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+
+source "$SCRIPT_DIR/functions/formatter.sh"
+
 # Check if RELEASE_DATE is set
 if [ -z "$RELEASE_DATE" ]; then
     echo "Error: RELEASE_TAG is not set!"
@@ -26,15 +30,15 @@ RELEASE_TYPE="${BANANAWRT_RELEASE:-stable}"
 
 # Create the BananaWRT release file
 cat > package/base-files/files/etc/bananawrt_release << EOF
-# BananaWRT Release Information
-BANANAWRT_BUILD_DATE="${BUILD_DATE}"
-BANANAWRT_COMMIT="${GITHUB_SHA}"
-BANANAWRT_COMMIT_SHORT="${SHORT_SHA}"
-BANANAWRT_BRANCH="${BRANCH}"
-BANANAWRT_TYPE="${RELEASE_TYPE}"
+    # BananaWRT Release Information
+    BANANAWRT_BUILD_DATE='${BUILD_DATE}'
+    BANANAWRT_COMMIT='${GITHUB_SHA}'
+    BANANAWRT_COMMIT_SHORT='${SHORT_SHA}'
+    BANANAWRT_BRANCH='${BRANCH}'
+    BANANAWRT_TYPE='${RELEASE_TYPE}'
 EOF
 
-echo "BananaWRT metadata injected successfully!"
-echo "Release Tag: ${RELEASE_DATE}"
-echo "Build Type: ${RELEASE_TYPE}"
-echo "Git Commit: ${SHORT_SHA}"
+section "BananaWRT metadata injected successfully!"
+info "Release Tag: ${RELEASE_DATE}"
+info "Build Type: ${RELEASE_TYPE}"
+info "Git Commit: ${SHORT_SHA}"
