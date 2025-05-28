@@ -96,6 +96,35 @@ get_packages_for_action() {
     echo "$result_packages"
 }
 
+verify_packages() {
+    local packages=$1
+    local action=$2
+    local failed_packages=""
+    local success_count=0
+    
+    for pkg in $packages; do
+        if [ "$action" == "setup" ]; then
+            if is_package_installed "$pkg"; then
+                ((success_count++))
+                [ "$VERBOSE" = true ] && success "Verified: $pkg is installed"
+            else
+                failed_packages="$failed_packages $pkg"
+                [ "$VERBOSE" = true ] && error "Verification failed: $pkg is not installed"
+            fi
+        elif [ "$action" == "clean" ]; then
+            if ! is_package_installed "$pkg"; then
+                ((success_count++))
+                [ "$VERBOSE" = true ] && success "Verified: $pkg is removed"
+            else
+                failed_packages="$failed_packages $pkg"
+                [ "$VERBOSE" = true ] && error "Verification failed: $pkg is still installed"
+            fi
+        fi
+    done
+    
+    echo "$success_count|$failed_packages"
+}
+
 manage_packages_batch() {
     local packages=$1
     local action=$2
@@ -112,13 +141,37 @@ manage_packages_batch() {
     if [ "$action" == "setup" ]; then
         info "Installing $package_count packages: $(echo $packages_to_process | tr ' ' ',')"
         if [ "$DRY_RUN" = false ]; then
-            if sudo apt -qq install -y $packages_to_process >/dev/null 2>&1; then
-                success "$package_count packages installed successfully."
+            local apt_output
+            if [ "$VERBOSE" = true ]; then
+                apt_output=$(sudo apt install -y $packages_to_process 2>&1)
+                echo "$apt_output"
             else
-                error "Failed to install some packages. Trying individually..."
-                for pkg in $packages_to_process; do
-                    if sudo apt -qq install -y "$pkg" >/dev/null 2>&1; then
-                        success "Package $pkg installed successfully."
+                apt_output=$(sudo apt -qq install -y $packages_to_process 2>&1)
+            fi
+            local apt_exit_code=$?
+            
+            local verification=$(verify_packages "$packages_to_process" "setup")
+            local success_count=$(echo "$verification" | cut -d'|' -f1)
+            local failed_packages=$(echo "$verification" | cut -d'|' -f2)
+            
+            if [ -z "$failed_packages" ]; then
+                success "$success_count packages installed and verified successfully."
+            else
+                local failed_count=$(echo $failed_packages | wc -w)
+                error "$failed_count packages failed to install: $(echo $failed_packages | tr ' ' ',')"
+                if [ "$VERBOSE" = false ]; then
+                    info "APT output: $apt_output"
+                fi
+                
+                info "Attempting individual installation of failed packages..."
+                for pkg in $failed_packages; do
+                    info "Installing $pkg individually..."
+                    if sudo apt install -y "$pkg"; then
+                        if is_package_installed "$pkg"; then
+                            success "Package $pkg installed successfully."
+                        else
+                            error "Package $pkg installation reported success but verification failed."
+                        fi
                     else
                         error "Failed to install package $pkg."
                     fi
@@ -130,17 +183,26 @@ manage_packages_batch() {
     elif [ "$action" == "clean" ]; then
         info "Removing $package_count packages: $(echo $packages_to_process | tr ' ' ',')"
         if [ "$DRY_RUN" = false ]; then
-            if sudo apt -qq remove --purge -y $packages_to_process >/dev/null 2>&1; then
-                success "$package_count packages removed successfully."
+            local apt_output
+            if [ "$VERBOSE" = true ]; then
+                apt_output=$(sudo apt remove --purge -y $packages_to_process 2>&1)
+                echo "$apt_output"
             else
-                error "Failed to remove some packages. Trying individually..."
-                for pkg in $packages_to_process; do
-                    if sudo apt -qq remove --purge -y "$pkg" >/dev/null 2>&1; then
-                        success "Package $pkg removed successfully."
-                    else
-                        error "Failed to remove package $pkg."
-                    fi
-                done
+                apt_output=$(sudo apt -qq remove --purge -y $packages_to_process 2>&1)
+            fi
+            
+            local verification=$(verify_packages "$packages_to_process" "clean")
+            local success_count=$(echo "$verification" | cut -d'|' -f1)
+            local failed_packages=$(echo "$verification" | cut -d'|' -f2)
+            
+            if [ -z "$failed_packages" ]; then
+                success "$success_count packages removed and verified successfully."
+            else
+                local failed_count=$(echo $failed_packages | wc -w)
+                error "$failed_count packages failed to remove: $(echo $failed_packages | tr ' ' ',')"
+                if [ "$VERBOSE" = false ]; then
+                    info "APT output: $apt_output"
+                fi
             fi
         else
             info "[DRY RUN] Would remove: $packages_to_process"
