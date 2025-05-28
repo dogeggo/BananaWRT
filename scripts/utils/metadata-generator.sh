@@ -10,14 +10,14 @@
 # See /LICENSE for more information.
 #
 
-# Check if RELEASE_TAG is set
-if [ -z "$RELEASE_TAG" ]; then
+# Check if RELEASE_DATE is set
+if [ -z "$RELEASE_DATE" ]; then
     echo "Error: RELEASE_TAG is not set!"
     exit 1
 fi
 
 # Get other variables from environment
-BUILD_DATE="$RELEASE_TAG"
+BUILD_DATE="$RELEASE_DATE"
 GITHUB_SHA="${GITHUB_SHA:-unknown}"
 SHORT_SHA="${GITHUB_SHA:0:7}"
 GITHUB_REF="${GITHUB_REF:-unknown}"
@@ -35,6 +35,6 @@ BANANAWRT_TYPE="${RELEASE_TYPE}"
 EOF
 
 echo "BananaWRT metadata injected successfully!"
-echo "Release Tag: ${RELEASE_TAG}"
+echo "Release Tag: ${RELEASE_DATE}"
 echo "Build Type: ${RELEASE_TYPE}"
 echo "Git Commit: ${SHORT_SHA}"
