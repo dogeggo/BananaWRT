@@ -55,19 +55,56 @@ ARCH=$(uname -m)
 info "Detected architecture: $ARCH"
 
 COMMON_PACKAGES="ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
-bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext git gnutls-dev \
+bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext git libgnutls28-dev \
 gperf haveged help2man intltool libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev \
-libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev \
-lld llvm lrzsz mkisofs nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip \
+libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev zlib1g-dev \
+lld llvm lrzsz genisoimage nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip \
 python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools \
 subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd gh git jq"
 
 X86_64_PACKAGES="gcc-multilib g++-multilib libc6-dev-i386 lib32gcc-s1"
-AARCH64_PACKAGES="libc6-dev libdw-dev zlib1g-dev liblzma-dev libelf-dev libpfm4 libpfm4-dev libbabeltrace-dev libbabeltrace-ctf-dev libtool-bin"
+AARCH64_PACKAGES="libc6-dev libdw-dev zlib1g-dev liblzma-dev libelf-dev libpfm4 libpfm4-dev libbabeltrace-dev libtool-bin"
+
+declare -A PACKAGE_MAPPING=(
+    ["gnutls-dev"]="libgnutls28-dev"
+    ["libz-dev"]="zlib1g-dev"
+    ["mkisofs"]="genisoimage"
+    ["libbabeltrace-ctf-dev"]="libbabeltrace-dev"
+)
+
+get_actual_package_name() {
+    local package=$1
+    if [[ -n "${PACKAGE_MAPPING[$package]}" ]]; then
+        echo "${PACKAGE_MAPPING[$package]}"
+    else
+        echo "$package"
+    fi
+}
 
 is_package_installed() {
     local package=$1
-    dpkg -l "$package" 2>/dev/null | grep -q "^ii"
+    local actual_package=$(get_actual_package_name "$package")
+    
+    if dpkg -l "$actual_package" 2>/dev/null | grep -q "^ii"; then
+        return 0
+    fi
+    
+    if [ "$package" != "$actual_package" ]; then
+        if dpkg -l "$package" 2>/dev/null | grep -q "^ii"; then
+            return 0
+        fi
+    fi
+    
+    if apt-cache show "$package" >/dev/null 2>&1; then
+        local providing_packages=$(apt-cache showpkg "$package" 2>/dev/null | awk '/^Reverse Provides:/{flag=1;next} /^[A-Za-z]/{flag=0} flag{print $1}')
+        for providing_pkg in $providing_packages; do
+            if dpkg -l "$providing_pkg" 2>/dev/null | grep -q "^ii"; then
+                return 0
+            fi
+        done
+    fi
+    
+    return 1
 }
 
 get_packages_for_action() {
