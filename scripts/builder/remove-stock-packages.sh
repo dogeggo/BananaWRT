@@ -9,9 +9,34 @@
 # See /LICENSE for more information.
 #
 
-rm -rf package/feeds/packages/lpac
-rm -rf package/feeds/luci/luci-app-modemband
-rm -rf package/feeds/packages/modemband
-rm -rf package/feeds/luci/luci-app-3ginfo-lite
-rm -rf package/feeds/luci/luci-i18n-modemband-*
-rm -rf package/feeds/luci/luci-app-sms-tool-js*
+check_and_remove() {
+    path="$1"
+    if [ -e "$path" ]; then
+        echo "Removing: $path"
+        rm -rf "$path"
+    else
+        echo "Not found: $path"
+    fi
+}
+
+check_and_remove "package/feeds/packages/lpac"
+check_and_remove "package/feeds/luci/luci-app-modemband"
+check_and_remove "package/feeds/packages/modemband"
+check_and_remove "package/feeds/luci/luci-app-3ginfo-lite"
+
+remove_with_glob() {
+    pattern="$1"
+    matches=( $pattern )
+    if [ ${#matches[@]} -gt 0 ]; then
+        echo "Removing files matching: $pattern"
+        for file in "${matches[@]}"; do
+            echo " - $file"
+            rm -rf "$file"
+        done
+    else
+        echo "No files found matching: $pattern"
+    fi
+}
+
+remove_with_glob "package/feeds/luci/luci-i18n-modemband-*"
+remove_with_glob "package/feeds/luci/luci-app-sms-tool-js*"
