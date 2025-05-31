@@ -61,7 +61,6 @@ This repository uses self-hosted runners to enhance performance and control in C
 
 | Worker Name         | Architecture | CPU                | RAM   | Storage         | Network          | Location      |
 | ------------------  | ------------ | ------------------ | ----- | --------------- | ---------------- | ------------- |
-| **manu-server-01**  | x86\_64      | 32-vCore, 3.6 GHz  | 64 GB | 100 GB SSD      | 10 Gbps          | Italy         |
 | **netcup-de-arm64** | ARM64        | 10-vCore, 3.0 GHz  | 16 GB | 1024 GB NvME    | 2.5 Gbps         | Germany       |
 
 Each worker is optimized for specific CI/CD tasks and is managed by the development team to ensure reliability and performance. If you’d like to contribute a new worker, please open an issue in this repository to discuss the details and integration process.
