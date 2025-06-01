@@ -376,32 +376,93 @@ def update_changelog():
             return
         
         release_section = f"## [{RELEASE_DATE}]"
+        section_exists = release_section in content
         
-        if release_section in content:
-            print(f"Release date {RELEASE_DATE} already exists in changelog")
-            return
-        
-        new_entry = create_new_changelog_entry(categorized_commits, RELEASE_DATE)
-        
-        lines = content.split('\n')
-        insert_index = -1
-        
-        for i, line in enumerate(lines):
-            if line.strip() == '---' and i > 0:
-                insert_index = i + 1
-                break
-        
-        if insert_index == -1:
-            for i, line in enumerate(lines):
-                if re.match(r'## \[\d{4}-\d{2}-\d{2}\]', line):
-                    insert_index = i
-                    break
-        
-        if insert_index == -1:
-            content += f"\n{new_entry}"
+        if section_exists:
+            print(f"Release date {RELEASE_DATE} already exists - will merge new commits")
         else:
-            lines.insert(insert_index, new_entry)
+            print(f"Creating new release section for {RELEASE_DATE}")
+        
+        if section_exists:
+            lines = content.split('\n')
+            
+            for category, commits in categorized_commits.items():
+                if not commits:
+                    continue
+                
+                category_header = f"### {CATEGORIES[category]['name']}"
+                
+                section_start = -1
+                section_end = -1
+                category_start = -1
+                category_end = -1
+                
+                for i, line in enumerate(lines):
+                    if line == release_section:
+                        section_start = i
+                    elif section_start != -1 and line.startswith('## [') and i > section_start:
+                        section_end = i
+                        break
+                    elif section_start != -1 and line == category_header:
+                        category_start = i
+                    elif category_start != -1 and (line.startswith('### ') or line.startswith('## [') or line.strip() == '---'):
+                        category_end = i
+                        break
+                
+                if section_end == -1:
+                    for i in range(len(lines) - 1, -1, -1):
+                        if lines[i].strip() == '---' and i > section_start:
+                            section_end = i
+                            break
+                
+                if category_start == -1:
+                    if section_end == -1:
+                        section_end = len(lines)
+                    
+                    insert_pos = section_end
+                    for i in range(section_start + 1, section_end):
+                        if lines[i].strip() == '---':
+                            insert_pos = i
+                            break
+                    
+                    lines.insert(insert_pos, f"### {CATEGORIES[category]['name']}")
+                    lines.insert(insert_pos + 1, "")
+                    
+                    for j, commit in enumerate(commits):
+                        lines.insert(insert_pos + 2 + j, f"- {commit}  ")
+                    
+                    lines.insert(insert_pos + 2 + len(commits), "")
+                else:
+                    if category_end == -1:
+                        category_end = section_end if section_end != -1 else len(lines)
+                    
+                    for commit in commits:
+                        lines.insert(category_end, f"- {commit}  ")
+                        category_end += 1
+            
             content = '\n'.join(lines)
+        else:
+            new_entry = create_new_changelog_entry(categorized_commits, RELEASE_DATE)
+            
+            lines = content.split('\n')
+            insert_index = -1
+            
+            for i, line in enumerate(lines):
+                if line.strip() == '---' and i > 0:
+                    insert_index = i + 1
+                    break
+            
+            if insert_index == -1:
+                for i, line in enumerate(lines):
+                    if re.match(r'## \[\d{4}-\d{2}-\d{2}\]', line):
+                        insert_index = i
+                        break
+            
+            if insert_index == -1:
+                content += f"\n{new_entry}"
+            else:
+                lines.insert(insert_index, new_entry)
+                content = '\n'.join(lines)
         
         content = update_release_date(content, RELEASE_DATE)
         
