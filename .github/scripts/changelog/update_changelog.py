@@ -61,19 +61,10 @@ EMOJI_MAP = {
 
 CATEGORIES = {
     'additional_packages': {
-        'name': '🧩 Additional Packages',
-        'patterns': [
-            r'banana-utils', r'luci-app-', r'linkup-optimization', r'modemband', 
-            r'sms-tool', r'package', r'lib', r'-app-', r'-tool', r'opkg'
-        ]
+        'name': '🧩 Additional Packages'
     },
     'bananawrt_core': {
-        'name': '🍌 BananaWRT Core',
-        'patterns': [
-            r'workflow', r'github', r'action', r'script', r'dts', r'\.yml', r'\.yaml', 
-            r'ci', r'cd', r'template', r'core', r'readme', r'documentation', r'changelog', 
-            r'config', r'kernel', r'bug', r'fix', r'feat', r'feature'
-        ]
+        'name': '🍌 BananaWRT Core'
     }
 }
 
@@ -155,37 +146,22 @@ def get_emoji_for_commit(commit_msg):
     
     return '🛠️'
 
-def categorize_commit(commit_msg, files_changed):
-    if not commit_msg:
+def categorize_commit(commit_msg, files_changed, repo_type=None):
+    if repo_type == 'packages':
         return 'additional_packages'
-        
-    commit_msg_lower = commit_msg.lower().strip()
-    
-    for category, details in CATEGORIES.items():
-        for pattern in details['patterns']:
-            if re.search(pattern, commit_msg_lower, re.IGNORECASE):
-                return category
-    
-    if files_changed:
-        for file_path in files_changed:
-            if not file_path:
-                continue
-            file_path_lower = file_path.lower()
-            for category, details in CATEGORIES.items():
-                for pattern in details['patterns']:
-                    if re.search(pattern, file_path_lower, re.IGNORECASE):
-                        return category
+    elif repo_type == 'main':
+        return 'bananawrt_core'
     
     return 'additional_packages'
 
 def format_commit_message(commit, author):
     try:
         if not commit or not commit.message:
-            return f"🛠️ Unknown commit by @{author}"
+            return f"🛠️ unknown commit by @{author}"
         
         message = commit.message.split('\n')[0].strip()
         if not message:
-            return f"🛠️ Empty commit message by @{author}"
+            return f"🛠️ empty commit message by @{author}"
         
         original_message = message
         
@@ -208,8 +184,7 @@ def format_commit_message(commit, author):
         if not message:
             message = original_message
         
-        if message:
-            message = message[0].upper() + message[1:] if len(message) > 1 else message.upper()
+        message = message.lower()
         
         package_patterns = [
             r'`([^`]+)`',
@@ -226,7 +201,7 @@ def format_commit_message(commit, author):
         if package_name and '`' not in message:
             if package_name.lower() in message.lower():
                 message = re.sub(
-                    r'\b' + re.escape(package_name) + r'\b', 
+                    r'\b' + re.escape(package_name.lower()) + r'\b', 
                     f'`{package_name}`', 
                     message, 
                     flags=re.IGNORECASE
@@ -241,7 +216,7 @@ def format_commit_message(commit, author):
         
     except Exception as e:
         print(f"Error formatting commit message: {e}")
-        return f"🛠️ {commit.message.split(chr(10))[0] if commit and commit.message else 'Unknown'} by @{author}"
+        return f"🛠️ {commit.message.split(chr(10))[0] if commit and commit.message else 'unknown'} by @{author}"
 
 def get_commit_files(repo, commit_sha):
     try:
@@ -272,7 +247,7 @@ def should_skip_commit(commit_message):
     
     return False
 
-def get_recent_commits(repo_path, since_date, existing_signatures):
+def get_recent_commits(repo_path, since_date, existing_signatures, repo_type='main'):
     try:
         if not os.path.isdir(repo_path) or not os.path.isdir(os.path.join(repo_path, '.git')):
             print(f"Warning: Invalid git repository at {repo_path}")
@@ -303,7 +278,7 @@ def get_recent_commits(repo_path, since_date, existing_signatures):
                 
                 files_changed = get_commit_files(repo, commit.hexsha)
                 formatted_message = format_commit_message(commit, author)
-                category = categorize_commit(commit.message, files_changed)
+                category = categorize_commit(commit.message, files_changed, repo_type)
                 
                 commits.append({
                     'sha': commit.hexsha,
@@ -313,7 +288,8 @@ def get_recent_commits(repo_path, since_date, existing_signatures):
                     'files': files_changed,
                     'formatted': formatted_message,
                     'category': category,
-                    'signature': signature
+                    'signature': signature,
+                    'repo_type': repo_type
                 })
                 
             except Exception as e:
@@ -367,10 +343,10 @@ def update_changelog():
         existing_signatures = extract_commit_signatures_from_changelog()
         last_date = get_last_changelog_date()
         
-        main_commits = get_recent_commits(MAIN_REPO_PATH, last_date, existing_signatures)
+        main_commits = get_recent_commits(MAIN_REPO_PATH, last_date, existing_signatures, 'main')
         
         if os.path.isdir(PACKAGES_REPO_PATH) and os.path.isdir(os.path.join(PACKAGES_REPO_PATH, '.git')):
-            packages_commits = get_recent_commits(PACKAGES_REPO_PATH, last_date, existing_signatures)
+            packages_commits = get_recent_commits(PACKAGES_REPO_PATH, last_date, existing_signatures, 'packages')
         else:
             print(f"Warning: Packages repository not found at {PACKAGES_REPO_PATH}")
             packages_commits = []
