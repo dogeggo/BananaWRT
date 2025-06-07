@@ -38,7 +38,7 @@ on:
         description: 'Write the version of ImmortalWRT to use'
         type: string
         required: true
-        default: '24.10.0'
+        default: '24.10.1'
       cleanup:
         description: 'Do you want cleanup?'
         required: true
@@ -51,10 +51,10 @@ on:
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: ${{ github.event.inputs.version_system }}
-  FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: config/${{ github.event.inputs.release_type }}/.config
-  DIY_P1_SH: diy-part1.sh
-  DIY_P2_SH: diy-part2.sh
+  FEEDS_CONF: feeds.conf.default
+  REPO_SCRIPT: scripts/builder/custom-repository.sh
+  STOCK_PACKAGES: scripts/builder/remove-stock-packages.sh
   UPLOAD_BIN_DIR: false
   UPLOAD_PACKAGE_DIR: true
   UPLOAD_FIRMWARE: true
@@ -78,6 +78,10 @@ jobs:
     - name: Set timezone on the host
       run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
 
+    - name: Set Release data
+      run: |
+        echo "RELEASE_DATE=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+    
     - name: Authenticate GitHub
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -95,9 +99,9 @@ jobs:
     - name: Apply Custom Feeds Configuration
       run: |
         [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/immortalwrt/feeds.conf.default
-        chmod +x ${{ env.DIY_P1_SH }}
+        chmod +x ${{ env.REPO_SCRIPT }}
         cd ${{ runner.workspace }}/immortalwrt
-        $GITHUB_WORKSPACE/${{ env.DIY_P1_SH }}
+        $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
 
     - name: Add Custom DTS Files
       run: |
@@ -113,10 +117,20 @@ jobs:
       run: |
         [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
         [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
-        chmod +x ${{ env.DIY_P2_SH }}
+        chmod +x ${{ env.STOCK_PACKAGES }}
         cd ${{ runner.workspace }}/immortalwrt
-        $GITHUB_WORKSPACE/${{ env.DIY_P2_SH }}
+        $GITHUB_WORKSPACE/${{ env.STOCK_PACKAGES }}
         ./scripts/feeds install -p additional_pack -a
+
+    - name: Generate BananaWRT Metadata
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      env:
+        RELEASE_DATE: ${{ env.RELEASE_DATE }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_REF: ${{ github.ref }}
+      run: |
+        chmod +x $GITHUB_WORKSPACE/scripts/utils/metadata-generator.sh
+        $GITHUB_WORKSPACE/scripts/utils/metadata-generator.sh
 
     - name: Diffconfig with current configuration
       working-directory: ${{ runner.workspace }}/immortalwrt
@@ -143,7 +157,6 @@ jobs:
 
         make -j$(nproc) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
-        echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
     - name: Check Disk Usage
       run: df -hT
@@ -152,14 +165,14 @@ jobs:
       if: env.UPLOAD_BIN_DIR == 'true'
       uses: actions/upload-artifact@v4.6.2
       with:
-        name: BananaWRT_bin${{ env.FILE_DATE }}
+        name: BananaWRT_bin${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
 
     - name: Upload Custom Packages
       if: env.UPLOAD_PACKAGE_DIR == 'true'
       uses: actions/upload-artifact@v4.6.2
       with:
-        name: BananaWRT_packages${{ env.FILE_DATE }}
+        name: BananaWRT_packages${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin/packages/*/additional_pack/*.ipk
 
     - name: Prepare Firmware for Upload
@@ -172,7 +185,7 @@ jobs:
       if: env.UPLOAD_FIRMWARE == 'true'
       uses: actions/upload-artifact@v4.6.2
       with:
-        name: BananaWRT_firmware${{ env.FILE_DATE }}
+        name: BananaWRT_firmware${{ env.RELEASE_DATE }}
         path: ${{ env.FIRMWARE }}
 
     - name: Create Release Tag
@@ -194,14 +207,12 @@ jobs:
             -e "s|{{RELEASE_DATE}}|$(date '+%Y-%m-%d %H:%M:%S')|g" \
             -e "s|{{TARGET_DEVICES}}|${target_devices}|g" \
             templates/release-notes-template.md > release.txt
-        
-        echo "release_tag=${release_date}" >> $GITHUB_ENV
-  
+          
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
-      uses: softprops/action-gh-release@v2.2.1
+      uses: softprops/action-gh-release@v2.2.2
       with:
-        tag_name: ${{ env.release_tag }}
+        tag_name: ${{ env.RELEASE_DATE }}
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
@@ -221,7 +232,7 @@ jobs:
         keep_minimum_runs: 7
 
     - name: Cleanup Workspace
-      if: ${{ github.event.inputs.cleanup }} == 'true'
+      if: ${{ github.event.inputs.cleanup }} == 'true' || always()
       run: |
         sudo rm -rf ~/.netrc
         sudo rm -rf "${{ runner.workspace }}/immortalwrt"

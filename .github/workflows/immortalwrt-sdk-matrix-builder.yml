@@ -1,0 +1,274 @@
+#
+# File: .github/workflows/immortalwrt-sdk-matrix-builder.yml
+# Description: Build BananaWRT SDK in matrix configuration
+#
+# Copyright (c) 2024-2025 SuperKali <hello@superkali.me>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+
+name: BananaWRT SDK Matrix Builder
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        description: 'Select architecture to build for'
+        required: true
+        type: choice
+        options:
+          - ALL
+          - X64
+          - ARM64
+        default: 'ALL'
+      versions:
+        description: 'ImmortalWRT versions (comma-separated)'
+        required: true
+        default: '24.10.1'
+
+env:
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  FEEDS_CONF: feeds.conf.default
+  REPO_SCRIPT: scripts/builder/custom-repository.sh
+  STOCK_PACKAGES: scripts/builder/remove-stock-packages.sh
+  CONFIG_FILE: config/stable/.config
+  UPLOAD_SDK: true
+  TZ: Europe/Rome
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set up build matrix
+        id: set-matrix
+        run: |
+          VERSIONS="${{ github.event.inputs.versions }}"
+          VERSION_ARRAY=$(echo $VERSIONS | tr ',' '\n' | jq -R . | jq -s .)
+          
+          if [ "${{ github.event.inputs.architecture }}" = "ALL" ]; then
+            ARCHS='["X64", "ARM64"]'
+          else
+            ARCHS='["${{ github.event.inputs.architecture }}"]'
+          fi
+          
+          MATRIX="{\"version\":$VERSION_ARRAY,\"arch\":$ARCHS}"
+          echo "Generated matrix: $MATRIX"
+          echo "matrix=$(echo "$MATRIX" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+  build-sdk:
+    needs: prepare
+    runs-on: [self-hosted, "${{ matrix.arch }}"]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Set Up Build Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        /bin/bash .github/scripts/setup-env.sh setup
+    
+    - name: Set timezone on the host
+      run: sudo timedatectl set-timezone "$TZ" || echo "Failed to set timezone, proceeding anyway."
+
+    - name: Authenticate GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        echo "machine github.com login ${{ secrets.PERSONAL_ACCESS_TOKEN }}" > ~/.netrc
+        chmod 600 ~/.netrc
+
+    - name: Clone ImmortalWRT Repository
+      working-directory: ${{ runner.workspace }}
+      run: |
+        git clone $REPO_URL -b v"${{ matrix.version }}" immortalwrt
+        echo "REPO_BRANCH=${{ matrix.version }}" >> $GITHUB_ENV
+
+    - name: Apply Custom Feeds Configuration
+      run: |
+        [ -e ${{ env.FEEDS_CONF }} ] && mv ${{ env.FEEDS_CONF }} ${{ runner.workspace }}/immortalwrt/feeds.conf.default
+        chmod +x ${{ env.REPO_SCRIPT }}
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
+
+    - name: Update and Install Package Feeds
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Apply Custom Configuration
+      run: |
+        [ -e files ] && mv files ${{ runner.workspace }}/immortalwrt/files
+        [ -e ${{ env.CONFIG_FILE }} ] && mv ${{ env.CONFIG_FILE }} ${{ runner.workspace }}/immortalwrt/.config
+        chmod +x ${{ env.STOCK_PACKAGES }}
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/${{ env.STOCK_PACKAGES }}
+        ./scripts/feeds install -p additional_pack -a
+
+    - name: Diffconfig with current configuration
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        ./scripts/diffconfig.sh > diffconfig
+        curl https://downloads.immortalwrt.org/releases/${{ matrix.version }}/targets/mediatek/filogic/config.buildinfo
+        cat diffconfig >> config.buildinfo
+        mv config.buildinfo .config
+        [ -n "$REPO_BRANCH" ] && sed -i \
+          -e 's|^CONFIG_VERSION_REPO=.*|CONFIG_VERSION_REPO="https://downloads.immortalwrt.org/releases/'"${{ matrix.version }}"'"|g' \
+          .config
+
+    - name: Download Required Packages
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        make defconfig
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+
+    - name: Build SDK
+      working-directory: ${{ runner.workspace }}/immortalwrt
+      run: |
+        make -j$(nproc) || make -j1 V=s
+        echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+
+    - name: Prepare SDK Files for Upload
+      run: |
+        SDK_PATH=$(find ${{ runner.workspace }}/immortalwrt/bin/targets -name "*sdk*" -type f | grep -v sha256sum | head -n 1)
+        CONFIG_PATH=$(find ${{ runner.workspace }}/immortalwrt/bin/targets -name "config.buildinfo" | head -n 1)
+        
+        if [ -z "$SDK_PATH" ]; then
+          echo "SDK not found"
+          exit 1
+        fi
+        
+        SDK_FILENAME=$(basename "$SDK_PATH")
+        SDK_SHA256=$(sha256sum "$SDK_PATH" | cut -d' ' -f1)
+        SDK_SIZE=$(stat -c%s "$SDK_PATH")
+        
+        TARGET=$(echo "$SDK_FILENAME" | sed -n 's/immortalwrt-sdk-.*-\(.*\)_gcc.*/\1/p')
+        
+        mkdir -p ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}
+        
+        cp "$SDK_PATH" ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/
+        cp "$CONFIG_PATH" ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/ || true
+        
+        cat > ${{ runner.workspace }}/sdk-artifacts/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/sdk-info.json << EOF
+        {
+          "version": "${{ matrix.version }}",
+          "architecture": "${{ matrix.arch }}",
+          "target": "$TARGET",
+          "filename": "$SDK_FILENAME",
+          "buildDate": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+          "sha256": "$SDK_SHA256",
+          "size": $SDK_SIZE,
+          "download_url": "https://repo.superkali.me/bananawrt/sdk/${{ matrix.arch }}/${{ matrix.version }}/$SDK_FILENAME"
+        }
+        EOF
+
+    - name: Upload SDK Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: sdk-${{ matrix.arch }}-${{ matrix.version }}
+        path: ${{ runner.workspace }}/sdk-artifacts
+        retention-days: 1
+
+    - name: Cleanup Workspace
+      if: always()
+      run: |
+        sudo rm -rf ~/.netrc
+        if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
+            sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        fi
+        if [ -d "${{ runner.workspace }}/sdk-artifacts" ]; then
+            sudo rm -rf "${{ runner.workspace }}/sdk-artifacts"
+        fi
+
+  upload-to-ftp:
+    needs: [prepare, build-sdk]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-artifacts
+    
+    - name: Create Master Index
+      run: |
+        mkdir -p ftp-upload
+        
+        for artifact_dir in all-artifacts/sdk-*; do
+          cp -r $artifact_dir/* ftp-upload/
+        done
+        
+        VERSIONS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.version | join(" ")')
+        ARCHS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.arch | join(" ")')
+        BASE_URL="https://repo.superkali.me/bananawrt/sdk"
+        
+        mkdir -p ftp-upload/bananawrt/sdk
+        
+        cat > ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
+        {
+          "versions": {
+        EOF
+        
+        first_version=true
+        for VERSION in $VERSIONS; do
+          if [ "$first_version" = true ]; then
+            first_version=false
+          else
+            echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
+          fi
+          
+          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
+            "$VERSION": {
+              "architectures": {
+        EOF
+          
+          first_arch=true
+          for ARCH in $ARCHS; do
+            if [ "$first_arch" = true ]; then
+              first_arch=false
+            else
+              echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
+            fi
+            
+            cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
+                "$ARCH": {
+                  "sdk_url": "$BASE_URL/$ARCH/$VERSION/",
+                  "config_url": "$BASE_URL/$ARCH/$VERSION/config.buildinfo",
+                  "info_url": "$BASE_URL/$ARCH/$VERSION/sdk-info.json"
+                }
+        EOF
+          done
+          
+          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
+              }
+            }
+        EOF
+        done
+        
+        cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
+          }
+        }
+        EOF
+
+    - name: Upload All Files to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ftp-upload/bananawrt/sdk/
+        server-dir: /bananawrt/sdk/
+        dangerous-clean-slate: false
+        log-level: minimal

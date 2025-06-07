@@ -100,6 +100,8 @@ print_banner
 if [ "$MODE" = "fota" ]; then
     command -v curl >/dev/null 2>&1 || { log_error "curl is not installed. Cannot continue."; exit 1; }
     command -v jq >/dev/null 2>&1 || { log_error "jq is not installed. Cannot continue."; exit 1; }
+    BANANA_CURRENT_RELEASE=$(grep -o "BANANAWRT_BUILD_DATE='.*'" /etc/bananawrt_release  | cut -d "'" -f 2)
+    [ ! -z "$BANANA_CURRENT_RELEASE" ] && log_info "Current firmware version: $BANANA_CURRENT_RELEASE"
     log_info "Fetching releases from GitHub..."
     tempfile=$(mktemp)
     ( curl -s "https://api.github.com/repos/SuperKali/BananaWRT/releases" > "$tempfile" ) &

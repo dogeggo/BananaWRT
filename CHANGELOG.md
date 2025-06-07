@@ -3,6 +3,106 @@
 All notable changes to **BananaWRT** will be documented in this file.
 
 ---
+## [2025-06-01]
+
+### 🧩 Additional Packages
+
+- 🐛 workflow: fix builder packages by @SuperKali  
+- 🐛 atc-apn-database: fix compile on arm64 by @SuperKali  
+- 🐛 workflows: fix permission on script execution by @SuperKali  
+- 🛠️ workflows: renamed some script with new's by @SuperKali  
+- 🐛 atc-fib-fm350_gl: fix minor issue when debug is enabled by @SuperKali  
+
+### 🍌 BananaWRT Core
+
+- 🐛 changelog: fix some issue on changelog  generator by @SuperKali  
+- 🐛 changelog: trying to fix duplicated commits by @SuperKali  
+- 🛠️ scripts: checks if file exist by @SuperKali  
+- 🐛 dts: add missing #address-cells and #size-cells to fix the dtc warnings by @SuperKali  
+- 🗑️ scripts: remove empty space on metadata generator by @SuperKali  
+- 🐛 scripts: fix error on source formatter.sh by @SuperKali  
+- 🐛 metadata: fix formatter source by @SuperKali  
+- 🐛 workflows: fix create release tag by @SuperKali  
+- 🏗️ scripts: added formatted info on build workflow by @SuperKali  
+- ➕ scripts: add packages mapping to avoid errors by @SuperKali  
+- 🐛 scripts: fix some issue on setup script by @SuperKali  
+- 🛠️ scripts: better check if packages is already installed by @SuperKali  
+- 🛠️ workflow: aligned all script for generate bananawrt metadata by @SuperKali  
+- 🗑️ workflow: remove print empty release tag by @SuperKali  
+- 🛠️ workflow: testing metadata generator into the bananawrt system by @SuperKali  
+- 🛠️ scripts: moved to the correct directory and named with correctly name by @SuperKali  
+
+---
+
+
+## [2025-05-21]
+
+### 🧩 Additional Packages
+
+- 🗑️ Atc-apn-database and atc-fib-fm350_gl: remove unnecessary information by @SuperKali  
+- 🐛 Atc-apn-database & atc-fib-fm350_gl, minor fixes by @SuperKali  
+- ➕ Atc-apn-database: Bump version and added MIT License by @SuperKali  
+- 🔄 `linkup-optimization`: Removed wifi config and updated network conf by @SuperKali  
+
+---
+
+
+## [2025-05-11]
+
+### 🧩 Additional Packages
+
+- ➕ Added support for automatic APN detection by using atc-apn-database package by @SuperKali  
+- ➕ Luci-proto-atc & atc-fib-fm350: clean up and add check if apn is already configured by @SuperKali  
+- 🔼 Bump: `linkup-optimization` to 2.23 by @SuperKali  
+- 🗑️ `linkup-optimization`: Remove default apn by @SuperKali  
+- 🐛 ATC: minor fixes on apn auto detection by @SuperKali  
+- 🐛 ATC: minor fixes on apn auto detection by @SuperKali  
+- 🐛 ATC: fix some issue on apn auto detection by @SuperKali  
+- 📢 ATC: first support to auto apn connection by @SuperKali  
+- 🔼 Bumps: `linkup-optimization` and luci-app-sms-tool and revert AT port to ttyUSB1 by @SuperKali  
+
+---
+
+
+## [2025-05-04]
+
+### 🧩 Additional Packages
+
+- 🔄 `luci-app-3ginfo`: Remove adb dependency by @SuperKali  
+
+---
+
+
+## [2025-05-01]
+
+### 🍌 BananaWRT Core
+
+- 🔼 Bump stable version to v24.10.1 by @SuperKali  
+- 🔄 Docs: Update CHANGELOG for 2025-04-24 (#54) by @SuperKali  
+- 🔼 Bump actions/download-artifact from 4.2.1 to 4.3.0 (#6) by @dependabot[bot]  
+
+---
+
+
+## [2025-04-24]
+
+### 🧩 Additional Packages
+
+- 🐛 `banana-utils`: Fix hostname function. by @SuperKali  
+- 🌟 `luci-app-fan`: Improve hardware path detection in uci-defaults script by @SuperKali  
+- 🐛 `luci-app-fan`: Fix some stuff by @SuperKali  
+- 🔄 `luci-app-fan`: Remove warning if pwm_enable not exist and remove the box from UI by @SuperKali  
+- 🐛 `luci-app-fan`: Fix an issue if pwm enable is missing by @SuperKali  
+- 🐛 `banana-utils`: Fix repository configuration. by @SuperKali  
+
+### 🍌 BananaWRT Core
+
+- 🔼 Bump actions/setup-python from 4 to 5 (#50) by @dependabot[bot]  
+- 🔼 Bump softprops/action-gh-release from 2.2.1 to 2.2.2 (#51) by @dependabot[bot]  
+- 🔄 Docs: Update CHANGELOG for 2025-04-18 (#48) by @SuperKali  
+
+---
+
 
 ## [2025-04-18]
 
@@ -111,4 +211,4 @@ All notable changes to **BananaWRT** will be documented in this file.
 ---
 
 🛠️ Maintained with ❤️ by [BananaWRT](https://github.com/SuperKali/BananaWRT)  
-📅 Release date: **April 18, 2025**
+📅 Release date: **June 01, 2025**
