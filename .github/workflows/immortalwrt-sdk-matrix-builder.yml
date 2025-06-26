@@ -134,7 +134,7 @@ jobs:
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
         make defconfig
-        [ -n "${{ github.event.inputs.nproc }}"] && make download -j${{ github.event.inputs.nproc }} || make download -j$(nproc)
+        [ -n "${{ github.event.inputs.nproc }}" ] && make download -j${{ github.event.inputs.nproc }} || make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
