@@ -26,6 +26,10 @@ on:
         description: 'ImmortalWRT versions (comma-separated)'
         required: true
         default: '24.10.1'
+      nproc:
+        description: 'Specify the number of threads to use it on the compiler'
+        required: false
+        default: ''
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
@@ -130,14 +134,14 @@ jobs:
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
         make defconfig
-        make download -j$(nproc)
+        [ -n "${{ github.event.inputs.nproc }}" ] && make download -j${{ github.event.inputs.nproc }} || make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
     - name: Build SDK
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-        make -j$(nproc) || make -j1 V=s
+        ( [ -n "${{ github.event.inputs.nproc }}" ] && make -j${{ github.event.inputs.nproc }} || make -j$(nproc) ) || make -j1 V=s
         echo "FILE_DATE=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
     - name: Prepare SDK Files for Upload
@@ -202,65 +206,44 @@ jobs:
       with:
         path: all-artifacts
     
-    - name: Create Master Index
+    - name: Download Existing Master Index
       run: |
-        mkdir -p ftp-upload
-        
-        for artifact_dir in all-artifacts/sdk-*; do
-          cp -r $artifact_dir/* ftp-upload/
-        done
-        
-        VERSIONS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.version | join(" ")')
-        ARCHS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.arch | join(" ")')
-        BASE_URL="https://repo.superkali.me/bananawrt/sdk"
-        
         mkdir -p ftp-upload/bananawrt/sdk
         
-        cat > ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
-        {
-          "versions": {
-        EOF
-        
-        first_version=true
-        for VERSION in $VERSIONS; do
-          if [ "$first_version" = true ]; then
-            first_version=false
-          else
-            echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
+        curl -f -o ftp-upload/bananawrt/sdk/sdk-master-index.json \
+          https://repo.superkali.me/bananawrt/sdk/sdk-master-index.json || \
+          echo '{"versions":{}}' > ftp-upload/bananawrt/sdk/sdk-master-index.json
+    
+    - name: Copy New Artifacts and Update Index
+      run: |
+        for artifact_dir in all-artifacts/sdk-*; do
+          if [ -d "$artifact_dir" ]; then
+            cp -rf "$artifact_dir"/* ftp-upload/
           fi
-          
-          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
-            "$VERSION": {
-              "architectures": {
-        EOF
-          
-          first_arch=true
-          for ARCH in $ARCHS; do
-            if [ "$first_arch" = true ]; then
-              first_arch=false
-            else
-              echo "," >> ftp-upload/bananawrt/sdk/sdk-master-index.json
-            fi
-            
-            cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
-                "$ARCH": {
-                  "sdk_url": "$BASE_URL/$ARCH/$VERSION/",
-                  "config_url": "$BASE_URL/$ARCH/$VERSION/config.buildinfo",
-                  "info_url": "$BASE_URL/$ARCH/$VERSION/sdk-info.json"
-                }
-        EOF
-          done
-          
-          cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
-              }
-            }
-        EOF
         done
         
-        cat >> ftp-upload/bananawrt/sdk/sdk-master-index.json << EOF
-          }
-        }
-        EOF
+        VERSIONS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.version[]')
+        ARCHS=$(echo '${{ needs.prepare.outputs.matrix }}' | jq -r '.arch[]')
+        BASE_URL="https://repo.superkali.me/bananawrt/sdk"
+        
+        MASTER_INDEX="ftp-upload/bananawrt/sdk/sdk-master-index.json"
+        
+        for VERSION in $VERSIONS; do
+          jq --arg version "$VERSION" \
+             '.versions[$version] //= {"architectures": {}}' \
+             "$MASTER_INDEX" > temp.json && mv temp.json "$MASTER_INDEX"
+          
+          for ARCH in $ARCHS; do
+            jq --arg version "$VERSION" \
+               --arg arch "$ARCH" \
+               --arg base_url "$BASE_URL" \
+               '.versions[$version].architectures[$arch] = {
+                 "sdk_url": ($base_url + "/" + $arch + "/" + $version + "/"),
+                 "config_url": ($base_url + "/" + $arch + "/" + $version + "/config.buildinfo"),
+                 "info_url": ($base_url + "/" + $arch + "/" + $version + "/sdk-info.json")
+               }' "$MASTER_INDEX" > temp.json && mv temp.json "$MASTER_INDEX"
+          done
+        done
 
     - name: Upload All Files to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
