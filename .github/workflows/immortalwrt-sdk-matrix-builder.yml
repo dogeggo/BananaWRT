@@ -201,6 +201,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Install lftp
+      run: |
+        sudo apt update && sudo apt install -y lftp
+        
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
       with:
@@ -246,12 +250,55 @@ jobs:
         done
 
     - name: Upload All Files to FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ftp-upload/bananawrt/sdk/
-        server-dir: /bananawrt/sdk/
-        dangerous-clean-slate: false
-        log-level: minimal
+      run: |
+        echo "================================================================"
+        echo "🚀 Starting FTP upload to repo.superkali.me"
+        echo "================================================================"
+        
+        echo "📁 Files to upload:"
+        find ftp-upload -type f | while read file; do
+          size=$(stat -c%s "$file")
+          echo "  $(basename "$file") ($(numfmt --to=iec $size))"
+        done
+        echo ""
+        
+        echo "🔄 Connecting to FTP server..."
+        
+        lftp -c "
+        set ftp:ssl-allow no;
+        set net:timeout 30;
+        set net:max-retries 3;
+        set net:reconnect-interval-base 5;
+        set cmd:fail-exit true;
+        
+        open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_HOST }};
+        
+        echo '📡 Connected successfully';
+        echo '🔄 Starting incremental sync...';
+        
+        mirror --reverse --verbose --only-newer --parallel=2 ftp-upload/bananawrt/sdk /bananawrt/sdk;
+        
+        echo '✅ Upload completed successfully';
+        quit
+        " 2>&1 | while IFS= read -r line; do
+          case "$line" in
+            *"Making directory"*) echo "📁 $line" ;;
+            *"Transferring file"*) echo "📤 $line" ;;
+            *"bytes transferred"*) echo "📊 $line" ;;
+            *"mirror:"*) echo "🔄 $line" ;;
+            *"Total:"*) echo "📈 $line" ;;
+            *"Connected"*) echo "✅ $line" ;;
+            *"Upload completed"*) echo "🎉 $line" ;;
+            *"Error"*|*"error"*) echo "❌ $line" ;;
+            *) echo "$line" ;;
+          esac
+        done
+        
+        # Clear history again after execution
+        history -c 2>/dev/null || true
+        
+        echo ""
+        echo "================================================================"
+        echo "🎉 FTP upload completed!"
+        echo "📍 Repository URL: https://repo.superkali.me/bananawrt/sdk/"
+        echo "================================================================"

@@ -23,6 +23,8 @@ check_and_remove "package/feeds/packages/lpac"
 check_and_remove "package/feeds/luci/luci-app-modemband"
 check_and_remove "package/feeds/packages/modemband"
 check_and_remove "package/feeds/luci/luci-app-3ginfo-lite"
+check_and_remove "feeds/luci/protocols/luci-proto-quectel"
+check_and_remove "feeds/packages/net/quectel-cm"
 
 remove_with_glob() {
     pattern="$1"
