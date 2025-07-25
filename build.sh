@@ -23,3 +23,4 @@ cd ..
 make defconfig
 make download -j$(nproc)
 make -j$(nproc) V=s
+nohup make -j$(nproc) V=s > build.log 2>&1 &
