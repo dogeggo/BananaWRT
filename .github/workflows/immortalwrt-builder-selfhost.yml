@@ -103,10 +103,11 @@ jobs:
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
 
-    - name: Add Custom Patch Files
+    - name: Apply Custom Patch Files
       run: |
-        cp -r patch/kernel/dts/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
-        cp -r patch/kernel/files/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/files/
+        chmod +x scripts/utils/patch-manager.sh
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/scripts/utils/patch-manager.sh ${{ github.event.inputs.release_type }} ${{ runner.workspace }}/immortalwrt
 
     - name: Update and Install Package Feeds
       working-directory: ${{ runner.workspace }}/immortalwrt
