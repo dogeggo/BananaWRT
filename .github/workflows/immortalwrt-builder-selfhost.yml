@@ -39,14 +39,11 @@ on:
         type: string
         required: true
         default: '24.10.1'
-      cleanup:
-        description: 'Do you want cleanup?'
-        required: true
-        type: choice
-        options:
-          - yes
-          - no
-        default: yes
+      nproc:
+        description: 'Specify the number of threads to use it on the compiler'
+        required: false
+        default: ''
+
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
@@ -149,15 +146,14 @@ jobs:
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
         make defconfig
-        make download -j$(nproc)
+        [ -n "${{ github.event.inputs.nproc }}" ] && make download -j${{ github.event.inputs.nproc }} || make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         
     - name: Build Firmware
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-
-        make -j$(nproc) || make -j1 V=s
+        ( [ -n "${{ github.event.inputs.nproc }}" ] && make -j${{ github.event.inputs.nproc }} || make -j$(nproc) ) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
 
     - name: Check Disk Usage
@@ -234,7 +230,10 @@ jobs:
         keep_minimum_runs: 7
 
     - name: Cleanup Workspace
-      if: ${{ github.event.inputs.cleanup }} == 'true' || always()
+      if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
+            sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        fi
+
