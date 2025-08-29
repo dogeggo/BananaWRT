@@ -74,7 +74,7 @@ jobs:
 
     - name: Add Custom Patch Files
       run: |
-        cp -r patch/kernel/${{env.BANANAWRT_RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        cp -r patch/kernel/dts/${{env.BANANAWRT_RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
         cp -r patch/kernel/files/${{env.BANANAWRT_RELEASE}}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/files/
 
     - name: Update and Install Package Feeds

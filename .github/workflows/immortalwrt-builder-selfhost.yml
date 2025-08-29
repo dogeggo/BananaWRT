@@ -105,7 +105,7 @@ jobs:
 
     - name: Add Custom Patch Files
       run: |
-        cp -r patch/kernel/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        cp -r patch/kernel/dts/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
         cp -r patch/kernel/files/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/files/
 
     - name: Update and Install Package Feeds
