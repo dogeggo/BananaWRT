@@ -1,9 +1,6 @@
 #!/bin/bash
 
-
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-
-source "$SCRIPT_DIR/functions/formatter.sh"
+source "$GITHUB_WORKSPACE/.github/scripts/functions/formatter.sh"
 
 RELEASE_TYPE="${1:-stable}"
 PATCH_BASE_DIR="patch"
