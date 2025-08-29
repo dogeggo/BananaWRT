@@ -3,12 +3,12 @@
 source "$GITHUB_WORKSPACE/.github/scripts/functions/formatter.sh"
 
 RELEASE_TYPE="${1:-stable}"
-PATCH_BASE_DIR="patch"
+PATCH_BASE_DIR="$GITHUB_WORKSPACE/patch"
 IMMORTALWRT_DIR="${2:-$PWD}"
 
 apply_patches() {
     local patch_type="$1"
-    local source_dir="$2"
+    local source_dir="$2"  
     local dest_dir="$3"
     local description="$4"
     
@@ -103,9 +103,6 @@ main() {
     total_failed=$((total_failed + $?))
     
     apply_patches "kernel/files" "" "$IMMORTALWRT_DIR/target/linux/mediatek/files" "Kernel files patches"
-    total_failed=$((total_failed + $?))
-    
-    apply_patches "generic" "" "$IMMORTALWRT_DIR" "Generic patches"
     total_failed=$((total_failed + $?))
     
     echo ""
