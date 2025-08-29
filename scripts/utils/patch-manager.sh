@@ -35,7 +35,7 @@ apply_patches() {
     local applied_count=0
     local failed_count=0
     
-    find "$patch_dir" -type f | while IFS= read -r file; do
+    while IFS= read -r file; do
         local rel_path="${file#$patch_dir/}"
         local dest_file="$dest_dir/$rel_path"
         local dest_parent=$(dirname "$dest_file")
@@ -57,7 +57,7 @@ apply_patches() {
             error "Failed to apply: $rel_path"
             ((failed_count++))
         fi
-    done
+    done < <(find "$patch_dir" -type f)
     
     if [ "$failed_count" -eq 0 ]; then
         success "$description applied successfully ($applied_count files)"
