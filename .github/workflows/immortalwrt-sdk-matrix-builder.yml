@@ -25,7 +25,7 @@ on:
       versions:
         description: 'ImmortalWRT versions (comma-separated)'
         required: true
-        default: '24.10.0,24.10.1,24.10.2,24.10.3'
+        default: '24.10.0,24.10.1,24.10.2,24.10.3,24.10.4'
       nproc:
         description: 'Specify the number of threads to use it on the compiler'
         required: false
@@ -221,8 +221,9 @@ jobs:
     - name: Copy New Artifacts and Update Index
       run: |
         for artifact_dir in all-artifacts/sdk-*; do
-          if [ -d "$artifact_dir" ]; then
-            cp -rf "$artifact_dir"/* ftp-upload/
+          if [ -d "$artifact_dir/bananawrt/sdk" ]; then
+            echo "Copying from: $artifact_dir"
+            rsync -av "$artifact_dir/bananawrt/sdk/" ftp-upload/bananawrt/sdk/
           fi
         done
         
