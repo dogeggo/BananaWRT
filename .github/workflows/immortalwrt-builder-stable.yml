@@ -19,7 +19,7 @@ on:
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: 24.10.2
+  REPO_BRANCH: 24.10.4
   BANANAWRT_RELEASE: stable
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: config/stable/.config
@@ -36,7 +36,7 @@ jobs:
     runs-on: self-hosted
     steps:
     - name: Checkout Source Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set Up Build Environment
       env:
@@ -72,9 +72,11 @@ jobs:
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
 
-    - name: Add Custom DTS Files
+    - name: Apply Custom Patch Files
       run: |
-        cp -r dts/${{ env.BANANAWRT_RELEASE }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        chmod +x scripts/utils/patch-manager.sh
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/scripts/utils/patch-manager.sh ${{env.BANANAWRT_RELEASE}} ${{ runner.workspace }}/immortalwrt
 
     - name: Update and Install Package Feeds
       working-directory: ${{ runner.workspace }}/immortalwrt
@@ -131,14 +133,14 @@ jobs:
 
     - name: Upload Binary Files
       if: env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_bin${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
     
     - name: Upload Custom Packages
       if: env.UPLOAD_PACKAGE_DIR == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_packages${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin/packages/*/additional_pack/*.ipk
@@ -151,7 +153,7 @@ jobs:
 
     - name: Upload Firmware Files
       if: env.UPLOAD_FIRMWARE == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_firmware${{ env.RELEASE_DATE }}
         path: ${{ env.FIRMWARE }}
@@ -175,7 +177,7 @@ jobs:
         
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
-      uses: softprops/action-gh-release@v2.3.2
+      uses: softprops/action-gh-release@v2.4.2
       with:
         tag_name: ${{ env.RELEASE_DATE }}
         body_path: release.txt
@@ -191,7 +193,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@v2.0.6
+      uses: Mattraks/delete-workflow-runs@v2.1.0
       with:
         retain_days: 0
         keep_minimum_runs: 7

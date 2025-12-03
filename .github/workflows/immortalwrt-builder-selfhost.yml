@@ -38,15 +38,12 @@ on:
         description: 'Write the version of ImmortalWRT to use'
         type: string
         required: true
-        default: '24.10.1'
-      cleanup:
-        description: 'Do you want cleanup?'
-        required: true
-        type: choice
-        options:
-          - yes
-          - no
-        default: yes
+        default: '24.10.4'
+      nproc:
+        description: 'Specify the number of threads to use it on the compiler'
+        required: false
+        default: ''
+
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
@@ -67,7 +64,7 @@ jobs:
 
     steps:
     - name: Checkout Source Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set Up Build Environment
       env:
@@ -103,9 +100,11 @@ jobs:
         cd ${{ runner.workspace }}/immortalwrt
         $GITHUB_WORKSPACE/${{ env.REPO_SCRIPT }}
 
-    - name: Add Custom DTS Files
+    - name: Apply Custom Patch Files
       run: |
-        cp -r dts/${{ github.event.inputs.release_type }}/* ${{ runner.workspace }}/immortalwrt/target/linux/mediatek/dts/
+        chmod +x scripts/utils/patch-manager.sh
+        cd ${{ runner.workspace }}/immortalwrt
+        $GITHUB_WORKSPACE/scripts/utils/patch-manager.sh ${{ github.event.inputs.release_type }} ${{ runner.workspace }}/immortalwrt
 
     - name: Update and Install Package Feeds
       working-directory: ${{ runner.workspace }}/immortalwrt
@@ -147,15 +146,14 @@ jobs:
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
         make defconfig
-        make download -j$(nproc)
+        [ -n "${{ github.event.inputs.nproc }}" ] && make download -j${{ github.event.inputs.nproc }} || make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         
     - name: Build Firmware
       working-directory: ${{ runner.workspace }}/immortalwrt
       run: |
-
-        make -j$(nproc) || make -j1 V=s
+        ( [ -n "${{ github.event.inputs.nproc }}" ] && make -j${{ github.event.inputs.nproc }} || make -j$(nproc) ) || make -j1 V=s
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
 
     - name: Check Disk Usage
@@ -163,14 +161,14 @@ jobs:
 
     - name: Upload Binary Files
       if: env.UPLOAD_BIN_DIR == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_bin${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin
 
     - name: Upload Custom Packages
       if: env.UPLOAD_PACKAGE_DIR == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_packages${{ env.RELEASE_DATE }}
         path: ${{ runner.workspace }}/immortalwrt/bin/packages/*/additional_pack/*.ipk
@@ -183,7 +181,7 @@ jobs:
 
     - name: Upload Firmware Files
       if: env.UPLOAD_FIRMWARE == 'true'
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v5
       with:
         name: BananaWRT_firmware${{ env.RELEASE_DATE }}
         path: ${{ env.FIRMWARE }}
@@ -210,7 +208,7 @@ jobs:
           
     - name: Publish Firmware Release
       if: env.UPLOAD_RELEASE == 'true'
-      uses: softprops/action-gh-release@v2.3.2
+      uses: softprops/action-gh-release@v2.4.2
       with:
         tag_name: ${{ env.RELEASE_DATE }}
         body_path: release.txt
@@ -226,13 +224,16 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   
     - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@v2.0.6
+      uses: Mattraks/delete-workflow-runs@v2.1.0
       with:
         retain_days: 0
         keep_minimum_runs: 7
 
     - name: Cleanup Workspace
-      if: ${{ github.event.inputs.cleanup }} == 'true' || always()
+      if: always()
       run: |
         sudo rm -rf ~/.netrc
-        sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        if [ -d "${{ runner.workspace }}/immortalwrt" ]; then
+            sudo rm -rf "${{ runner.workspace }}/immortalwrt"
+        fi
+
