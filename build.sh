@@ -11,13 +11,12 @@ apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison bu
   upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
 # bash -c 'bash <(curl -s https://build-scripts.immortalwrt.org/init_build_environment.sh)'
 export FORCE_UNSAFE_CONFIGURE=1
-git clone https://github.com/immortalwrt/immortalwrt -b v24.10.2 immortalwrt
-cp -r dts/nightly/* immortalwrt/target/linux/mediatek/dts/
-cp -r 5G-Modem/5G-Modem-Support immortalwrt/package
+git clone https://github.com/immortalwrt/immortalwrt -b v24.10.4 immortalwrt
+cp -r patch/kernel/dts/stable/* immortalwrt/target/linux/mediatek/dts/
+cp -r patch/kernel/files/stable/drivers/leds/trigger immortalwrt/target/linux/mediatek/files/drivers/leds/
+# cp -r 5G-Modem/5G-Modem-Support immortalwrt/package
 cp .config immortalwrt/
-cd immortalwrt/package
-wget -r -np -nH --cut-dirs=3 -R "index.html*" https://repo.superkali.me/releases/24.10.2/packages/additional_pack/
-cd ..
+cd immortalwrt
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 make defconfig
