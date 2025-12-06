@@ -1,86 +1,125 @@
 <div align="center">
   <img src="https://cdn.superkali.me/1113423827479274/bananawrt-logo.png" alt="BananaWRT Logo" width="350px" height="auto">
-  <h2>BananaWRT</h2>
-  
+  <h1>BananaWRT</h1>
+  <p><em>A custom ImmortalWRT distribution optimized for Banana Pi R3 Mini and Fibocom FM350</em></p>
+
   [![Stable](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder-stable.yml?label=Stable&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder-stable.yml)
   [![Nightly](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-builder-nightly.yml?label=Nightly&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-builder-nightly.yml)
   [![Checker](https://img.shields.io/github/actions/workflow/status/SuperKali/BananaWRT/immortalwrt-checker.yml?label=Checker&style=for-the-badge&logo=github)](https://github.com/SuperKali/BananaWRT/actions/workflows/immortalwrt-checker.yml)
-  
+
 </div>
 
+---
 
-**BananaWRT** is a custom distribution based on **ImmortalWRT**, specifically optimized for the **Banana Pi R3 Mini** paired with the **Fibocom FM350** modem. This project leverages GitHub Actions for automated compilation, ensuring seamless and up-to-date builds.
+## Overview
 
-## Features
+**BananaWRT** is a specialized OpenWRT distribution built on top of **ImmortalWRT**, designed specifically for the **Banana Pi R3 Mini** router combined with the **Fibocom FM350** 5G modem. The project leverages GitHub Actions for continuous integration and automated builds, ensuring users always have access to the latest stable and nightly releases.
 
-- Optimized support for **Banana Pi R3 Mini** hardware.
-- Support for the **Fibocom FM350** modem using mrhaav add-ons, such as (luci-proto-atc, atc-fib-fm350_gl)
-- Automatic **APN** detection for quick and seamless configuration (atc-apn-database)
-- Custom LPAC add-on for advanced eSIM management (lpac).
-- Optimized support of 4IceG add-ons, such as (luci-app-3ginfo, modemband, etc).
-- Automated builds using GitHub Actions.
-- Based on the stable and feature-rich **ImmortalWRT** distribution.
+## Key Features
+
+### Hardware Optimization
+- **Native support** for Banana Pi R3 Mini hardware platform
+- **Full integration** with Fibocom FM350 5G NR modem (firmware 81600.0000.00.29.24.02+)
+- **Advanced modem management** via mrhaav's add-ons (`luci-proto-atc`, `atc-fib-fm350_gl`)
+
+### Connectivity Features
+- **Automatic APN detection** for seamless carrier configuration (`atc-apn-database`)
+- **Advanced eSIM management** with custom LPAC integration
+- **Comprehensive modem tools** from 4IceG project (`luci-app-3ginfo`, `modemband`, and more)
+
+### Build System
+- **Automated CI/CD pipeline** using GitHub Actions
+- **Stable and nightly builds** for production and testing environments
+- **Built on ImmortalWRT** for enhanced stability and feature set
 
 ---
 
 ## Hardware Specifications
 
 ### Banana Pi R3 Mini
-| Specification               | Details                                                                                 |
-|-----------------------------|-----------------------------------------------------------------------------------------|
-| **CPU**                     | MediaTek MT7986A (Filogic 830) Quad-core ARM Cortex-A53 up to 2GHz                      |
-| **RAM**                     | 2GB DDR4                                                                                |
-| **Storage**                 | 8GB eMMC flash, 128MB SPI NAND flash; supports M.2 NVMe SSD via M.2 Key-M slot          |
-| **Networking**              | 2x 2.5GbE Ethernet ports via Airoha EN8811H controllers                                 |
-| **Wi-Fi**                   | Dual-band Wi-Fi 6 (2.4GHz: 574Mbps, 5GHz: 2402Mbps) via MediaTek MT7976C                |
-| **Expansion Slots**         | 1x M.2 Key-B (USB 3.0) for 5G NR module, 1x M.2 Key-M (PCIe 2.0 x2) for NVMe SSD        |
-| **USB Ports**               | 1x USB 2.0 Type-A                                                                       |
-| **SIM Support**             | 1x Nano SIM slot                                                                        |
-| **Power Supply**            | 12V/1.67A DC input via USB Type-C PD                                                    |
- 
-### Fibocom FM350
 
-| Specification                | Details                                       |
-|------------------------------|-----------------------------------------------|
-| **Modem Type**               | 5G NR Sub-6GHz / LTE / WCDMA                  |
-| **Max Download Speed**       | 4.67 Gbps                                     |
-| **Max Upload Speed**         | 1.25 Gbps                                     |
-| **NR Bands**                 | n1/2/3/7/25/28/30/38/40/41/48/66/77/78/79     |
-| **LTE Bands**                | b1/2/3/4/7/25/30/32/34/38/39/40/41/42/43/48/66|
-| **Interface**                | M.2 Key-B (USB 3.1 Gen1) or (PCIe Gen3 x1)    |
-| **GPS**                      | Supported                                     |
-| **Power**                    | 3.3V DC                                       |
+| Component | Specification |
+|-----------|---------------|
+| **SoC** | MediaTek MT7986A (Filogic 830) - Quad-core ARM Cortex-A53 @ 2.0GHz |
+| **RAM** | 2GB DDR4 |
+| **Storage** | 8GB eMMC, 128MB SPI NAND, M.2 Key-M for NVMe |
+| **Ethernet** | 2× 2.5GbE (Airoha EN8811H) |
+| **Wi-Fi** | Wi-Fi 6 Dual-band (MediaTek MT7976C) - 574/2402 Mbps |
+| **Expansion** | M.2 Key-B (USB 3.0) for 5G, M.2 Key-M (PCIe 2.0 x2) for NVMe |
+| **Power** | 12V/1.67A via USB Type-C PD |
+
+### Fibocom FM350 5G Modem
+
+> [!IMPORTANT]
+> This distribution supports FM350 modems with firmware version **81600.0000.00.29.23.xx** or later.
+>
+> Download firmware: **[FM350 Repository](https://share.superkali.me/s/7SxD8MpKYEigFKF)**
+>
+> **Serial Interfaces:** AT commands are accessible via `ttyUSB1` and `ttyUSB3`
+
+| Specification | Details |
+|---------------|---------|
+| **Technology** | 5G NR Sub-6GHz / LTE / WCDMA |
+| **Speed** | 4.67 Gbps DL / 1.25 Gbps UL |
+| **5G Bands** | n1/2/3/7/25/28/30/38/40/41/48/66/77/78/79 |
+| **LTE Bands** | b1/2/3/4/7/25/30/32/34/38/39/40/41/42/43/48/66 |
+| **Interface** | M.2 Key-B (USB 3.1 Gen1 / PCIe Gen3 x1) |
 
 ---
 
-## ⚙️ GitHub Runner Self-Hosted
+## Infrastructure
 
-This repository uses self-hosted runners to enhance performance and control in CI/CD workflows.
+### Self-Hosted Build Runners
 
-### Runner Specifications
+To ensure optimal build performance and reliability, this project utilizes self-hosted GitHub Actions runners:
 
-| Worker Name         | Architecture | CPU                | RAM   | Storage         | Network          | Location      |
-| ------------------  | ------------ | ------------------ | ----- | --------------- | ---------------- | ------------- |
-| **netcup-de-arm64** | ARM64        | 10-vCore, 3.0 GHz  | 16 GB | 1024 GB NvME    | 2.5 Gbps         | Germany       |
+| Runner Name         | Architecture | CPU               | RAM   | Storage      | Network  | Location |
+|---------------------|--------------|-------------------|-------|--------------|----------|----------|
+| **netcup-de-arm64** | ARM64        | 10-vCore @ 3.0GHz | 16 GB | 1024 GB NVMe | 2.5 Gbps | Germany  |
 
-Each worker is optimized for specific CI/CD tasks and is managed by the development team to ensure reliability and performance. If you’d like to contribute a new worker, please open an issue in this repository to discuss the details and integration process.
+Each runner is professionally managed and optimized for CI/CD workloads. If you're interested in contributing hardware resources, please open an issue to discuss integration.
 
-A special thanks to the supporters who have donated a worker node, helping to strengthen the project.
+**Special thanks** to all supporters who have donated computing resources to this project.
 
-## ⭐ Star History
+---
 
-If you find this project useful, consider giving it a star ⭐. It’s a great way to show your support and helps me stay motivated to improve and grow the project.
+## Community & Support
+
+### Star History
+
+Your support helps drive this project forward. If you find BananaWRT useful, please consider giving it a star ⭐
 
 [![Star History Chart](https://api.star-history.com/svg?repos=SuperKali/BananaWRT&type=Date)](https://star-history.com/#SuperKali/BananaWRT&Date)
 
-📌 Once the project reaches 200 stars ⭐, the customized packages will be released publicly. This does not mean the project is not fully open source; rather, it serves as a reminder of the immense effort behind it. Leaving a star is a simple way to show support for the maintainer. Those who wish to contribute financially can do so using the "Sponsor" button at the top.
+> **Milestone Goal:** Once we reach **200 stars**, additional customized packages will be released publicly.
+>
+> This project is fully open source—the star milestone simply recognizes the significant effort involved in maintaining and improving BananaWRT. For financial support, use the **Sponsor** button at the top of the page.
 
-## 📊 Repository Activity
+### Repository Activity
 
-![Alt](https://repobeats.axiom.co/api/embed/be7f3efd58c41ba325eff1a5b101c8e40956ff2e.svg "Repobeats analytics image")
+![Repository Activity](https://repobeats.axiom.co/api/embed/be7f3efd58c41ba325eff1a5b101c8e40956ff2e.svg "Repobeats analytics image")
 
-## 🔧 Contributions
+---
 
-Contributions are welcome! Please open issues for bugs or feature requests and submit pull requests for code changes.
+## Contributing
 
+Contributions are welcome and appreciated! Here's how you can help:
 
+- **Report bugs** by opening an issue with detailed reproduction steps
+- **Request features** through the issue tracker
+- **Submit pull requests** for bug fixes or enhancements
+- **Improve documentation** to help other users
+
+Please ensure your contributions follow the project's coding standards and include appropriate documentation.
+
+---
+
+## License
+
+This project is based on ImmortalWRT and follows the same licensing terms. See individual components for their specific licenses.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by the BananaWRT community</sub>
+</div>
